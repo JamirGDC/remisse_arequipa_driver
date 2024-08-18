@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/pages/check_list_page.dart';
 
@@ -11,9 +12,27 @@ class DriverHomePage extends StatefulWidget {
 }
 
 class _DriverHomePageState extends State<DriverHomePage> {
-  final String driverName = "Juan";
+ String driverName = "Condutor";
   bool isFichado = false; // Estado del switch
+@override
+  void initState() {
+    super.initState();
+    _getUserName();
+  }
 
+  Future<void> _getUserName() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      setState(() {
+        driverName = user.displayName ?? 'Conductor'; // Actualiza el nombre si el usuario tiene un displayName
+      });
+    } else {
+      setState(() {
+        driverName = 'Usuario no logueado'; // Si no hay usuario logueado
+      });
+    }
+  }
   String getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
@@ -39,6 +58,10 @@ class _DriverHomePageState extends State<DriverHomePage> {
     final String today = getFormattedDate();
 
     return Scaffold(
+     appBar: AppBar(
+    
+        backgroundColor: neutralColor,
+      ),
       backgroundColor: neutralColor,
       body: Padding(
         padding: const EdgeInsets.all(16.0),

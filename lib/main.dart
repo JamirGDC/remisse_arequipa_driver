@@ -8,6 +8,7 @@ import 'package:remisse_arequipa_driver/pages/assign_route_page';
 import 'package:remisse_arequipa_driver/pages/create_client_page.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 
 //import 'package:remisse_arequipa/users/Profile_Users.dart';
 
