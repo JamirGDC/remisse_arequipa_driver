@@ -1,130 +1,166 @@
 import 'dart:async';
-
-
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/map_theme_methods.dart';
-
+import 'package:remisse_arequipa_driver/models/direction_details.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final LatLng? startLocation;
+  final LatLng? endLocation;
+  final String? tripKey; // Agrega el parámetro tripKey
+
+  const HomePage({super.key, this.tripKey, this.startLocation, this.endLocation});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-{
+class _HomePageState extends State<HomePage> {
   final Completer<GoogleMapController> googleMapCompleterController = Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
   Position? currentPositionOfDriver;
-  Color colorToShow = Colors.green;
-  String titleToShow = "GO ONLINE NOW";
-  bool isDriverAvailable = false;
-  DatabaseReference? newTripRequestReference;
   MapThemeMethods themeMethods = MapThemeMethods();
+  DirectionDetails? tripDirectionDetails;
+  Set<Polyline> polylines = {}; // Para almacenar las polilíneas
+  Set<Marker> markers = {}; // Para almacenar los marcadores
 
-
-  getCurrentLiveLocationOfDriver() async
-  {
-    Position positionOfUser = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
-    currentPositionOfDriver = positionOfUser;
-    driverCurrentPosition = currentPositionOfDriver;
-
-    LatLng positionOfUserInLatLng = LatLng(currentPositionOfDriver!.latitude, currentPositionOfDriver!.longitude);
-
-    CameraPosition cameraPosition = CameraPosition(target: positionOfUserInLatLng, zoom: 15);
-    controllerGoogleMap!.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-  }
-
-  goOnlineNow()
-  {
-    //all drivers who are Available for new trip requests
-    Geofire.initialize("onlineDrivers");
-
-    Geofire.setLocation(
-        FirebaseAuth.instance.currentUser!.uid,
-        currentPositionOfDriver!.latitude,
-        currentPositionOfDriver!.longitude,
-    );
-
-    newTripRequestReference = FirebaseDatabase.instance.ref()
-        .child("drivers")
-        .child(FirebaseAuth.instance.currentUser!.uid)
-        .child("newTripStatus");
-    newTripRequestReference!.set("waiting");
-
-    newTripRequestReference!.onValue.listen((event) { });
-  }
-
-  setAndGetLocationUpdates()
-  {
-    positionStreamHomePage = Geolocator.getPositionStream()
-        .listen((Position position)
-    {
-      currentPositionOfDriver = position;
-
-      if(isDriverAvailable == true)
-      {
-        Geofire.setLocation(
-            FirebaseAuth.instance.currentUser!.uid,
-            currentPositionOfDriver!.latitude,
-            currentPositionOfDriver!.longitude,
-        );
-      }
-
-      LatLng positionLatLng = LatLng(position.latitude, position.longitude);
-      controllerGoogleMap!.animateCamera(CameraUpdate.newLatLng(positionLatLng));
-    });
-  }
-
-  goOfflineNow()
-  {
-    //stop sharing driver live location updates
-    Geofire.removeLocation(FirebaseAuth.instance.currentUser!.uid);
-
-    //stop listening to the newTripStatus
-    newTripRequestReference!.onDisconnect();
-    newTripRequestReference!.remove();
-    newTripRequestReference = null;
-  }
-
-  // initializePushNotificationSystem()
-  // {
-  //   PushNotificationSystem notificationSystem = PushNotificationSystem();
-  //   notificationSystem.generateDeviceRegistrationToken();
-  //   notificationSystem.startListeningForNewNotification(context);
-  // }
-
-  retrieveCurrentDriverInfo() async
-  {
-    await FirebaseDatabase.instance.ref()
-        .child("drivers")
-        .child(FirebaseAuth.instance.currentUser!.uid)
-        .once().then((snap)
-    {
-      driverName = (snap.snapshot.value as Map)["name"];
-      driverPhone = (snap.snapshot.value as Map)["phone"];
-      driverPhoto = (snap.snapshot.value as Map)["photo"];
-      carColor = (snap.snapshot.value as Map)["car_details"]["carColor"];
-      carModel = (snap.snapshot.value as Map)["car_details"]["carModel"];
-      carNumber = (snap.snapshot.value as Map)["car_details"]["carNumber"];
-    });
-
-    // initializePushNotificationSystem();
-  }
+  BitmapDescriptor? startMarkerIcon;
+  BitmapDescriptor? endMarkerIcon;
 
   @override
   void initState() {
     super.initState();
+    _loadMarkerIcons();
+    if (widget.startLocation != null && widget.endLocation != null) {
+      _createRoute();
+    }
+  }
 
-    retrieveCurrentDriverInfo();
+  Future<void> _loadMarkerIcons() async {
+    startMarkerIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(24, 24)),
+      'lib/assets/initial.png',
+    );
+    endMarkerIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(24, 24)),
+      'lib/assets/final.png',
+    );
+    setState(() {});
+  }
+
+  Future<void> _createRoute() async {
+    if (widget.startLocation != null && widget.endLocation != null) {
+      tripDirectionDetails = await CommonMethods.getDirectionDetailsFromAPI(widget.startLocation!, widget.endLocation!);
+      _showRouteOnMap(tripDirectionDetails);
+    }
+  }
+
+  void _showRouteOnMap(DirectionDetails? details) {
+    if (details != null && controllerGoogleMap != null) {
+      PolylinePoints polylinePoints = PolylinePoints();
+      List<PointLatLng> decodedPolylinePoints = polylinePoints.decodePolyline(details.encodedPoints!);
+
+      List<LatLng> polylineCoordinates = decodedPolylinePoints.map((point) => LatLng(point.latitude, point.longitude)).toList();
+
+      Polyline polyline = Polyline(
+        polylineId: const PolylineId("tripRoute"),
+        color: Colors.blue,
+        points: polylineCoordinates,
+        width: 5,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      );
+
+      setState(() {
+        polylines.add(polyline);
+        markers.add(Marker(
+          markerId: const MarkerId("startMarker"),
+          position: widget.startLocation!,
+          icon: startMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          infoWindow: const InfoWindow(title: "Punto de inicio"),
+        ));
+        markers.add(Marker(
+          markerId: const MarkerId("endMarker"),
+          position: widget.endLocation!,
+          icon: endMarkerIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: const InfoWindow(title: "Punto final"),
+        ));
+      });
+
+      LatLngBounds bounds;
+      if (widget.startLocation!.latitude > widget.endLocation!.latitude && widget.startLocation!.longitude > widget.endLocation!.longitude) {
+        bounds = LatLngBounds(southwest: widget.endLocation!, northeast: widget.startLocation!);
+      } else if (widget.startLocation!.longitude > widget.endLocation!.longitude) {
+        bounds = LatLngBounds(
+            southwest: LatLng(widget.startLocation!.latitude, widget.endLocation!.longitude),
+            northeast: LatLng(widget.endLocation!.latitude, widget.startLocation!.longitude));
+      } else if (widget.startLocation!.latitude > widget.endLocation!.latitude) {
+        bounds = LatLngBounds(
+            southwest: LatLng(widget.endLocation!.latitude, widget.startLocation!.longitude),
+            northeast: LatLng(widget.startLocation!.latitude, widget.endLocation!.longitude));
+      } else {
+        bounds = LatLngBounds(southwest: widget.startLocation!, northeast: widget.endLocation!);
+      }
+
+      controllerGoogleMap!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+    }
+  }
+
+  Future<void> _startTrip() async {
+    Position positionOfDriver = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
+    LatLng driverCurrentPosition = LatLng(positionOfDriver.latitude, positionOfDriver.longitude);
+
+    // Calcular la ruta desde la ubicación actual del conductor hasta el punto de inicio
+    DirectionDetails? routeToStartPoint = await CommonMethods.getDirectionDetailsFromAPI(driverCurrentPosition, widget.startLocation!);
+
+    if (routeToStartPoint != null) {
+      _showRouteToStartPoint(routeToStartPoint);
+    }
+  }
+
+  void _showRouteToStartPoint(DirectionDetails details) {
+    PolylinePoints polylinePoints = PolylinePoints();
+    List<PointLatLng> decodedPolylinePoints = polylinePoints.decodePolyline(details.encodedPoints!);
+
+    List<LatLng> polylineCoordinates = decodedPolylinePoints.map((point) => LatLng(point.latitude, point.longitude)).toList();
+
+    Polyline polyline = Polyline(
+      polylineId: const PolylineId("routeToStartPoint"),
+      color: Colors.red,
+      points: polylineCoordinates,
+      width: 5,
+      startCap: Cap.roundCap,
+      endCap: Cap.roundCap,
+    );
+
+    setState(() {
+      polylines.add(polyline);
+    });
+
+    LatLngBounds bounds = LatLngBounds(
+      southwest: LatLng(
+        min(widget.startLocation!.latitude, driverCurrentPosition!.latitude),
+        min(widget.startLocation!.longitude, driverCurrentPosition!.longitude),
+      ),
+      northeast: LatLng(
+        max(widget.startLocation!.latitude, driverCurrentPosition!.latitude),
+        max(widget.startLocation!.longitude, driverCurrentPosition!.longitude),
+      ),
+    );
+
+    controllerGoogleMap!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+  }
+
+  void _cancelTrip() {
+    setState(() {
+      polylines.clear();
+      markers.clear();
+    });
   }
 
   @override
@@ -132,179 +168,58 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       body: Stack(
         children: [
-
-          ///google map
           GoogleMap(
             padding: const EdgeInsets.only(top: 136),
             mapType: MapType.normal,
             myLocationEnabled: true,
             initialCameraPosition: kArequipa,
-            onMapCreated: (GoogleMapController mapController)
-            {
+            polylines: polylines, // Mostrar todas las polilíneas
+            markers: markers, // Mostrar todos los marcadores
+            onMapCreated: (GoogleMapController mapController) {
               controllerGoogleMap = mapController;
               themeMethods.updateMapTheme(controllerGoogleMap!);
-
               googleMapCompleterController.complete(controllerGoogleMap);
-
-              getCurrentLiveLocationOfDriver();
             },
           ),
-
-          Container(
-            height: 136,
-            width: double.infinity,
-            color: Colors.black54,
-          ),
-
-          ///go online offline button
-          Positioned(
-            top: 61,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                ElevatedButton(
-                  onPressed: ()
-                  {
-                    showModalBottomSheet(
-                        context: context,
-                        isDismissible: false,
-                        builder: (BuildContext context)
-                        {
-                          return Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.black87,
-                              boxShadow:
-                              [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  blurRadius: 5.0,
-                                  spreadRadius: 0.5,
-                                  offset: Offset(
-                                    0.7,
-                                    0.7,
-                                  ),
-                                ),
-                              ],
+          if (tripDirectionDetails != null)
+            Positioned(
+              bottom: 50,
+              left: 20,
+              right: 20,
+              child: Card(
+                elevation: 5,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Duración del viaje: ${tripDirectionDetails!.durationTextString}"),
+                      const SizedBox(height: 8),
+                      Text("Dirección inicial: ${widget.startLocation.toString()}"),
+                      const SizedBox(height: 8),
+                      Text("Dirección final: ${widget.endLocation.toString()}"),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _startTrip, // Llamar a _startTrip al iniciar el viaje
+                            child: const Text("Iniciar Viaje"),
+                          ),
+                          ElevatedButton(
+                            onPressed: _cancelTrip,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
                             ),
-                            height: 221,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                              child: Column(
-                                children: [
-
-                                  const SizedBox(height:  11,),
-
-                                  Text(
-                                      (!isDriverAvailable) ? "GO ONLINE NOW" : "GO OFFLINE NOW",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.white70,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 21,),
-
-                                  Text(
-                                    (!isDriverAvailable)
-                                        ? "You are about to go online, you will become available to receive trip requests from users."
-                                        : "You are about to go offline, you will stop receiving new trip requests from users.",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white30,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 25,),
-
-                                  Row(
-                                    children: [
-
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: ()
-                                          {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            "BACK"
-                                          ),
-                                        ),
-                                      ),
-
-                                      const SizedBox(width: 16,),
-
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: ()
-                                          {
-                                            if(!isDriverAvailable)
-                                            {
-                                              //go online
-                                              goOnlineNow();
-
-                                              //get driver location updates
-                                              setAndGetLocationUpdates();
-
-                                              Navigator.pop(context);
-
-                                              setState(() {
-                                                colorToShow = Colors.pink;
-                                                titleToShow = "GO OFFLINE NOW";
-                                                isDriverAvailable = true;
-                                              });
-                                            }
-                                            else
-                                            {
-                                              //go offline
-                                              goOfflineNow();
-
-                                              Navigator.pop(context);
-
-                                              setState(() {
-                                                colorToShow = Colors.green;
-                                                titleToShow = "GO ONLINE NOW";
-                                                isDriverAvailable = false;
-                                              });
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: (titleToShow == "GO ONLINE NOW")
-                                                ? Colors.green
-                                                : Colors.pink,
-                                          ),
-                                          child: const Text(
-                                              "CONFIRM"
-                                          ),
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
-
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorToShow,
-                  ),
-                  child: Text(
-                    titleToShow,
+                            child: const Text("Cancelar"),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-
-              ],
+              ),
             ),
-          ),
-
         ],
       ),
     );

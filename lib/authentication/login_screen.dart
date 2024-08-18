@@ -6,7 +6,6 @@ import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
-import 'package:remisse_arequipa_driver/pages/home_page.dart';
 import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {

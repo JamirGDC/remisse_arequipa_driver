@@ -72,7 +72,7 @@ class _TripsPageState extends State<TripsPage>
                 child: Column(
                   children: [
 
-                    Image.asset("assets/images/totaltrips.png", width: 120,),
+                    Image.asset("lib/assets/totaltrips.png", width: 120,),
 
                     const SizedBox(
                       height: 10,
@@ -119,7 +119,7 @@ class _TripsPageState extends State<TripsPage>
                   child: Column(
                     children: [
 
-                      Image.asset("assets/images/tripscompleted.png", width: 150,),
+                      Image.asset("lib/assets/tripscompleted.png", width: 150,),
 
                       const SizedBox(
                         height: 10,

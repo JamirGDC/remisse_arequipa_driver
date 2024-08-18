@@ -34,6 +34,9 @@ dependencies:
   assets_audio_player: ^3.1.1
   url_launcher: ^6.3.0
   image_picker: ^1.1.2
+  geocoding: ^3.0.0
+  google_places_flutter: ^2.0.9
+  intl: ^0.19.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -73,6 +76,7 @@ flutter:
     - lib/assets/tracking.png
     - lib/assets/tripscompleted.png
     - lib/assets/uberexec.png
+    - lib/assets/night_style.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

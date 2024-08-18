@@ -54,7 +54,7 @@ String carNumber = "";
 StreamSubscription<Position>? positionStreamHomePage;
 StreamSubscription<Position>? positionStreamNewTripPage;
 
-String googleMapKey = "paste your key here";
+String googleMapKey = "AIzaSyBpjGzhPhaHA1H4coth-EBvp5qz-ZJsSaM";
 
 int driverTripRequestTimeout = 20;
 
