@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
+import 'package:remisse_arequipa_driver/pages/earnings_page.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/pages/profile_page.dart';
 import 'package:remisse_arequipa_driver/pages/trips_page.dart';
 
 
@@ -49,8 +52,9 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
         controller: controller,
         children: const [
           HomePage(),
+          DriverHomePage(),
           TripsPage(),
-          // ProfilePage(),
+          ProfilePage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -58,19 +62,19 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
         [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: "Home"
+            label: "Inicio"
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.credit_card),
-              label: "Earnings"
+              icon: Icon(Icons.check),
+              label: "Checkings"
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.account_tree),
-              label: "Trips"
+              label: "Viajes"
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              label: "Profile"
+              label: "Perfil"
           ),
         ],
         currentIndex: indexSelected,

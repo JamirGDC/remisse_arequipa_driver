@@ -5,7 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
+import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,52 +44,59 @@ class _LoginScreenState extends State<LoginScreen> {
       cMethods.displaysnackbar("Por favor ingrese su contraseña", context);
       return;
     } else {
-      logInUserNow();
+      signInUser();
     }
   }
 
-  logInUserNow() async {
-    try {
-      final User? firebaseUser =
-          (await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      ))
-              .user;
+  signInUser() async
+  {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => LoadingDialog(messageText: "Allowing you to Login..."),
+    );
 
-      if (firebaseUser != null) {
-        DatabaseReference ref = FirebaseDatabase.instance
-            .ref()
-            .child("users")
-            .child(firebaseUser.uid);
-        await ref.once().then((dataSnapshot) {
-          if (dataSnapshot.snapshot.value != null) {
-            if ((dataSnapshot.snapshot.value as Map)["blockStatus"] == "no") {
-              userName = (dataSnapshot.snapshot.value as Map)["name"];
-              userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
+    final User? userFirebase = (
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        ).catchError((errorMsg)
+        {
+          Navigator.pop(context);
+          cMethods.displaysnackbar(errorMsg.toString(), context);
+        })
+    ).user;
 
-              if (mounted) {
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (c) => const HomePage()));
-              }
-            } else {
-              FirebaseAuth.instance.signOut();
-              cMethods.displaysnackbar(
-                  "Tu cuenta esta bloqueada. Contacta con administración",
-                  context);
-            }
+    if(!context.mounted) return;
+    Navigator.pop(context);
+
+    if(userFirebase != null)
+    {
+      DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("drivers").child(userFirebase.uid);
+      usersRef.once().then((snap)
+      {
+        if(snap.snapshot.value != null)
+        {
+          if((snap.snapshot.value as Map)["blockStatus"] == "no")
+          {
+            //userName = (snap.snapshot.value as Map)["name"];
+            Navigator.push(context, MaterialPageRoute(builder: (c)=> Dashboard()));
           }
-        });
-      }
-    } on FirebaseException catch (e) {
-      FirebaseAuth.instance.signOut();
-      final errorMessage = e.message.toString();
-
-      if (!mounted) return;
-
-      cMethods.displaysnackbar(errorMessage, context);
+          else
+          {
+            FirebaseAuth.instance.signOut();
+            cMethods.displaysnackbar("you are blocked. Contact admin: alizeb875@gmail.com", context);
+          }
+        }
+        else
+        {
+          FirebaseAuth.instance.signOut();
+          cMethods.displaysnackbar("your record do not exists as a Driver.", context);
+        }
+      });
     }
   }
+
 
   @override
   void initState() {

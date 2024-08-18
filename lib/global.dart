@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 
@@ -39,3 +43,21 @@ const CameraPosition kArequipa = CameraPosition(
     target: LatLng(-16.409047, -71.537451),
     zoom: 14.4746,
   );
+
+String driverName = "";
+String driverPhone = "";
+String driverPhoto = "";
+String carColor = "";
+String carModel = "";
+String carNumber = "";
+
+StreamSubscription<Position>? positionStreamHomePage;
+StreamSubscription<Position>? positionStreamNewTripPage;
+
+String googleMapKey = "paste your key here";
+
+int driverTripRequestTimeout = 20;
+
+final audioPlayer = AssetsAudioPlayer();
+
+Position? driverCurrentPosition;
