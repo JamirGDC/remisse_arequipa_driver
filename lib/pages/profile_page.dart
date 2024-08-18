@@ -49,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage>
                 height: 180,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.grey,
+                    color: const Color.fromARGB(255, 0, 0, 0),
                     image: DecorationImage(
                         fit: BoxFit.fitHeight,
                         image: NetworkImage(
@@ -73,16 +73,16 @@ class _ProfilePageState extends State<ProfilePage>
                   style: const TextStyle(fontSize: 16, color: Colors.white),
                   decoration: const InputDecoration(
                     filled: true,
-                    fillColor: Colors.white24,
+                    fillColor: Color.fromARGB(60, 0, 0, 0),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 0, 0, 0),
                         width: 2,
                       ),
                     ),
                     prefixIcon: Icon(
                       Icons.person,
-                      color: Colors.white,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),
@@ -98,16 +98,16 @@ class _ProfilePageState extends State<ProfilePage>
                   style: const TextStyle(fontSize: 16, color: Colors.white),
                   decoration: const InputDecoration(
                     filled: true,
-                    fillColor: Colors.white24,
+                    fillColor: Color.fromARGB(60, 0, 0, 0),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 0, 0, 0),
                         width: 2,
                       ),
                     ),
                     prefixIcon: Icon(
                       Icons.phone_android_outlined,
-                      color: Colors.white,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),
@@ -123,16 +123,16 @@ class _ProfilePageState extends State<ProfilePage>
                   style: const TextStyle(fontSize: 16, color: Colors.white),
                   decoration: const InputDecoration(
                     filled: true,
-                    fillColor: Colors.white24,
+                    fillColor: Color.fromARGB(60, 0, 0, 0),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 0, 0, 0),
                         width: 2,
                       ),
                     ),
                     prefixIcon: Icon(
                       Icons.email,
-                      color: Colors.white,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),
@@ -148,16 +148,16 @@ class _ProfilePageState extends State<ProfilePage>
                   style: const TextStyle(fontSize: 16, color: Colors.white),
                   decoration: const InputDecoration(
                     filled: true,
-                    fillColor: Colors.white24,
+                    fillColor: Color.fromARGB(60, 0, 0, 0),
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 0, 0, 0),
                         width: 2,
                       ),
                     ),
                     prefixIcon: Icon(
                       Icons.drive_eta_rounded,
-                      color: Colors.white,
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),
@@ -175,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage>
                   Navigator.push(context, MaterialPageRoute(builder: (c)=> const LoginScreen()));
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
+                    backgroundColor: brandColor,
                     padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 18)
                 ),
                 child: const Text(

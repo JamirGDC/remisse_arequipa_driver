@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 import 'package:remisse_arequipa_driver/pages/earnings_page.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
@@ -80,7 +81,7 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
         currentIndex: indexSelected,
         //backgroundColor: Colors.grey,
         unselectedItemColor: Colors.grey,
-        selectedItemColor: Colors.pink,
+        selectedItemColor: brandColor,
         showSelectedLabels: true,
         selectedLabelStyle: const TextStyle(fontSize: 12),
         type: BottomNavigationBarType.fixed,

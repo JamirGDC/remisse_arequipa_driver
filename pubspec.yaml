@@ -65,7 +65,14 @@ flutter:
     - lib/assets/google.png
     - lib/assets/MeganProfile.jpg
     - lib/assets/profileuser.png
-
+    - lib/assets/avatarman.png
+    - lib/assets/final.png
+    - lib/assets/initial.png
+    - lib/assets/totalearnings.png
+    - lib/assets/totaltrips.png
+    - lib/assets/tracking.png
+    - lib/assets/tripscompleted.png
+    - lib/assets/uberexec.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
