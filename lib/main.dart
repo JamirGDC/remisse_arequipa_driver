@@ -6,6 +6,7 @@ import 'package:remisse_arequipa_driver/authentication/login_screen.dart';
 import 'package:remisse_arequipa_driver/firebase_options.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 
 //import 'package:remisse_arequipa/users/Profile_Users.dart';
 
@@ -35,8 +36,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-       home: FirebaseAuth.instance.currentUser == null ? const LoginScreen() : const Dashboard(), 
-       //home: const Dashboard(),
+       //home: FirebaseAuth.instance.currentUser == null ? const LoginScreen() : const Dashboard(), 
+       home:const LoginScreen() ,// modificar para trabajar con vistas
     );
   }
 }
