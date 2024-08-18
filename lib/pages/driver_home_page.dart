@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/pages/check_list_page.dart';
-
 
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key});
@@ -12,9 +12,10 @@ class DriverHomePage extends StatefulWidget {
 }
 
 class _DriverHomePageState extends State<DriverHomePage> {
- String driverName = "Condutor";
+  String driverName = "Conductor";
   bool isFichado = false; // Estado del switch
-@override
+
+  @override
   void initState() {
     super.initState();
     _getUserName();
@@ -23,16 +24,40 @@ class _DriverHomePageState extends State<DriverHomePage> {
   Future<void> _getUserName() async {
     User? user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
-      setState(() {
-        driverName = user.displayName ?? 'Conductor'; // Actualiza el nombre si el usuario tiene un displayName
-      });
+     if (user != null) {
+      try {
+        // Obtén la referencia de la base de datos usando ref()
+        DatabaseReference driversRef = FirebaseDatabase.instance
+            .ref()
+            .child('drivers')
+            .child(user.uid); // Suponiendo que el UID del usuario es la clave en la base de datos
+
+        DatabaseEvent event = await driversRef.once();
+        DataSnapshot snapshot = event.snapshot;
+
+        if (snapshot.exists) {
+          setState(() {
+            driverName = snapshot.child('name').value as String? ?? 'Conductor'; // Actualiza con el nombre del conductor
+          });
+        } else {
+          setState(() {
+            driverName = 'Conductor no encontrado'; // Si el registro no existe
+          });
+        }
+      } catch (e) {
+        setState(() {
+          driverName = 'Error al obtener el nombre'; // En caso de error
+        });
+       
+      }
     } else {
       setState(() {
-        driverName = 'Usuario no logueado'; // Si no hay usuario logueado
+        driverName = 'Conductor no logueado'; // Si no hay usuario logueado
       });
     }
   }
+
+
   String getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
@@ -58,8 +83,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     final String today = getFormattedDate();
 
     return Scaffold(
-     appBar: AppBar(
-    
+      appBar: AppBar(
         backgroundColor: neutralColor,
       ),
       backgroundColor: neutralColor,
@@ -181,20 +205,19 @@ class _DriverHomePageState extends State<DriverHomePage> {
             ),
             const SizedBox(height: 0.1),
             Expanded(
-  child: ClipRRect(
-    borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(30.0),
-      topRight: Radius.circular(30.0),
-    ),
-    child: Container(
-      decoration: const BoxDecoration(
-        color: Colors.white, // Cambia el color si es necesario
-      ),
-      child: ChecklistPage(), // Aquí se muestra el formulario de ChecklistPage
-    ),
-  ),
-),
-
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30.0),
+                  topRight: Radius.circular(30.0),
+                ),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white, // Cambia el color si es necesario
+                  ),
+                  child:  ChecklistPage(), // Aquí se muestra el formulario de ChecklistPage
+                ),
+              ),
+            ),
           ],
         ),
       ),
