@@ -154,7 +154,7 @@ class _SignupScreenState extends State<SignupScreen> {
       "carModel": vehicleModelTextEditingController.text.trim(),
       "carNumber": vehicleNumberTextEditingController.text.trim(),
     };
-
+    
     Map driverDataMap =
     {
       "photo": urlOfUploadedImage,
