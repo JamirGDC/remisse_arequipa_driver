@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/pages/check_list_page.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:geolocator/geolocator.dart';
 
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key});
@@ -14,68 +16,84 @@ class DriverHomePage extends StatefulWidget {
 class _DriverHomePageState extends State<DriverHomePage> {
   String driverName = "Conductor";
   bool isFichado = false; // Estado del switch
+  bool isSwitchEnabled = false; // Control de habilitación del switch
+  Position? currentPositionOfDriver;
+  DatabaseReference? newTripRequestReference;
 
   @override
   void initState() {
     super.initState();
     _getUserName();
+    _checkFormCompletion(); // Verificar si el formulario está completado
   }
 
   Future<void> _getUserName() async {
     User? user = FirebaseAuth.instance.currentUser;
 
-     if (user != null) {
+    if (user != null) {
       try {
-        // Obtén la referencia de la base de datos usando ref()
         DatabaseReference driversRef = FirebaseDatabase.instance
             .ref()
             .child('drivers')
-            .child(user.uid); // Suponiendo que el UID del usuario es la clave en la base de datos
+            .child(user.uid);
 
         DatabaseEvent event = await driversRef.once();
         DataSnapshot snapshot = event.snapshot;
 
         if (snapshot.exists) {
           setState(() {
-            driverName = snapshot.child('name').value as String? ?? 'Conductor'; // Actualiza con el nombre del conductor
+            driverName = snapshot.child('name').value as String? ?? 'Conductor';
           });
         } else {
           setState(() {
-            driverName = 'Conductor no encontrado'; // Si el registro no existe
+            driverName = 'Conductor no encontrado';
           });
         }
       } catch (e) {
         setState(() {
-          driverName = 'Error al obtener el nombre'; // En caso de error
+          driverName = 'Error al obtener el nombre';
         });
-       
       }
     } else {
       setState(() {
-        driverName = 'Conductor no logueado'; // Si no hay usuario logueado
+        driverName = 'Conductor no logueado';
       });
     }
   }
 
-
-  String getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return "Buenos días";
-    } else if (hour < 18) {
-      return "Buenas tardes";
-    } else {
-      return "Buenas noches";
-    }
+  Future<void> _checkFormCompletion() async {
+    // Aquí puedes definir la lógica para habilitar el switch
+    // Según tus necesidades, puedes reemplazar esta parte con la lógica adecuada.
+    // De momento, se mantendrá habilitado siempre.
+    setState(() {
+      isSwitchEnabled = true; // Habilitar el switch por defecto
+    });
   }
 
-  String getFormattedDate() {
-    final now = DateTime.now();
-    final months = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-    ];
-    return '${now.day} ${months[now.month - 1]}';
+  void goOnlineNow() {
+    Geofire.initialize("onlineDrivers");
+
+    Geofire.setLocation(
+      FirebaseAuth.instance.currentUser!.uid,
+      currentPositionOfDriver!.latitude,
+      currentPositionOfDriver!.longitude,
+    );
+
+    newTripRequestReference = FirebaseDatabase.instance
+        .ref()
+        .child("drivers")
+        .child(FirebaseAuth.instance.currentUser!.uid)
+        .child("newTripStatus");
+    newTripRequestReference!.set("waiting");
+
+    newTripRequestReference!.onValue.listen((event) {});
+  }
+
+  void goOfflineNow() {
+    Geofire.removeLocation(FirebaseAuth.instance.currentUser!.uid);
+    newTripRequestReference!.onDisconnect();
+    newTripRequestReference!.remove();
+    newTripRequestReference = null;
   }
 
   @override
@@ -160,13 +178,22 @@ class _DriverHomePageState extends State<DriverHomePage> {
                         ),
                       ),
                       Transform.scale(
-                        scale: 1.5,  // Escala el switch para hacerlo más grande
+                        scale: 1.5,
                         child: Switch(
                           value: isFichado,
-                          onChanged: (bool value) {
+                          onChanged: isSwitchEnabled ? (bool value) async {
                             setState(() {
                               isFichado = value;
                             });
+
+                            if (isFichado) {
+                              Position positionOfUser = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
+                              currentPositionOfDriver = positionOfUser;
+                              goOnlineNow();
+                            } else {
+                              goOfflineNow();
+                            }
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(isFichado
@@ -175,7 +202,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                 backgroundColor: acentColor,
                               ),
                             );
-                          },
+                          } : null,
                           activeColor: gradienteEndColor,
                           inactiveThumbColor: mutedColor,
                           inactiveTrackColor: mutedColor.withOpacity(0.5),
@@ -196,8 +223,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
               ),
             ),
             const SizedBox(height: 4.0),
-            const Text(
-              'Fecha: 29-03-2024 Hora: 15:00 h',
+              const Text(
+                'Fecha: 29-03-2024 Hora: 15:00 h',
               style: TextStyle(
                 fontSize: 16.0,
                 color: mutedColor,
@@ -212,9 +239,9 @@ class _DriverHomePageState extends State<DriverHomePage> {
                 ),
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Colors.white, // Cambia el color si es necesario
+                    color: Colors.white,
                   ),
-                  child:  ChecklistPage(), // Aquí se muestra el formulario de ChecklistPage
+                  child: ChecklistPage(),
                 ),
               ),
             ),
@@ -222,5 +249,25 @@ class _DriverHomePageState extends State<DriverHomePage> {
         ),
       ),
     );
+  }
+
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return "Buenos días";
+    } else if (hour < 18) {
+      return "Buenas tardes";
+    } else {
+      return "Buenas noches";
+    }
+  }
+
+  String getFormattedDate() {
+    final now = DateTime.now();
+    final months = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+    return '${now.day} ${months[now.month - 1]}';
   }
 }
