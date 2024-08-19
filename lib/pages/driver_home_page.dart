@@ -201,12 +201,15 @@ class _DriverHomePageState extends State<DriverHomePage> {
           backgroundColor: Colors.red,
         ),
       );
-    }).whenComplete(() {
-      setState(() {
-        _isSaving = false;
-        _fetchLastFormDate();
-      });
+    }).whenComplete(() async {
+    setState(() {
+      _isSaving = false;
     });
+
+    // Espera a que _fetchLastFormDate se complete antes de continuar
+    await _fetchLastFormDate();
+    await _checkFormCompletion();
+  });
   }
 
   void goOnlineNow() {
