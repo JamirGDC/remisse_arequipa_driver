@@ -5,6 +5,8 @@ import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/pages/check_list_page.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:remisse_arequipa_driver/methods/common_methods.dart';
+
 
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key});
@@ -19,12 +21,15 @@ class _DriverHomePageState extends State<DriverHomePage> {
   bool isSwitchEnabled = false; // Control de habilitación del switch
   Position? currentPositionOfDriver;
   DatabaseReference? newTripRequestReference;
+  String lastFormDate="cargando...";
+  String lastFormHour="cargando...";
 
   @override
   void initState() {
     super.initState();
     _getUserName();
     _checkFormCompletion(); // Verificar si el formulario está completado
+    _fetchLastFormDate(); // Obtener la última fecha de formulario
   }
 
   Future<void> _getUserName() async {
@@ -59,6 +64,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
         driverName = 'Conductor no logueado';
       });
     }
+  }
+ Future<void> _fetchLastFormDate() async {
+   Map<String, String> dateTime = await CommonMethods.getLastFormFilledDate();
+    setState(() {
+      lastFormDate = dateTime["date"] ?? "Cargando...";
+      lastFormHour = dateTime["time"] ?? "";
+    });
   }
 
   Future<void> _checkFormCompletion() async {
@@ -223,9 +235,9 @@ class _DriverHomePageState extends State<DriverHomePage> {
               ),
             ),
             const SizedBox(height: 4.0),
-              const Text(
-                'Fecha: 29-03-2024 Hora: 15:00 h',
-              style: TextStyle(
+               Text(
+                 'Fecha: $lastFormDate, Hora: $lastFormHour',
+              style:const TextStyle(
                 fontSize: 16.0,
                 color: mutedColor,
               ),
