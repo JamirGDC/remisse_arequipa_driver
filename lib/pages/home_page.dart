@@ -324,7 +324,7 @@ class _HomePageState extends State<HomePage> {
     final textPainter = TextPainter(
       text: TextSpan(
         text: 'Lat: ${position.latitude}, Long: ${position.longitude}\nDate: ${DateTime.now().toLocal().toString()}',
-        style: const TextStyle(color: Colors.white, fontSize: 20, shadows: [Shadow(blurRadius: 2.0, color: Colors.black, offset: Offset(1.0, 1.0))]),
+        style: const TextStyle(color: Colors.white, fontSize: 70, shadows: [Shadow(blurRadius: 2.0, color: Colors.black, offset: Offset(1.0, 1.0))]),
       ),
       textAlign: TextAlign.left,
       textDirection: TextDirection.ltr,

@@ -80,6 +80,7 @@ flutter:
     - lib/assets/tripscompleted.png
     - lib/assets/uberexec.png
     - lib/assets/night_style.json
+    - lib/assets/logo.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

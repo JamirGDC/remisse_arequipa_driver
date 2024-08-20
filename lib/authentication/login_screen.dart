@@ -6,6 +6,7 @@ import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
+import 'package:remisse_arequipa_driver/pages/home_page.dart';
 import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -141,22 +142,26 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               const SizedBox(height: 30),
-              const Padding(
-                padding: EdgeInsets.all(5),
-                child: Column(
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 70, // Tamaño del logo redondeado
-                      backgroundColor: neutralColor, // Reemplazado con la variable global neutralColor
-                      child: Icon(
-                        Icons.local_taxi,
-                        size: 50,
-                        color: gradienteEndColor, // Reemplazado con la variable global gradienteEndColor
+              Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Column(
+                    children: <Widget>[
+                      CircleAvatar(
+                        radius: 70, // Tamaño del logo redondeado
+                        backgroundColor: neutralColor, // Reemplazado con la variable global neutralColor
+                        child: ClipOval(
+                          child: Image.asset(
+                            'lib/assets/logo.png', // Ruta de la imagen del logo en assets
+                            fit: BoxFit.cover,
+                            width: 140, // Ajusta el ancho según el tamaño de tu logo
+                            height: 140, // Ajusta la altura según el tamaño de tu logo
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+
               const SizedBox(height: 50), // tamaño del contenedor blanco y logo
               Container(
                 width: double.infinity,
