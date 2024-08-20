@@ -195,6 +195,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isSaving ? null : _saveChecklist, // Desactiva el botón si está guardando
+        // ignore: prefer_const_constructors
         child: _isSaving ? CircularProgressIndicator() : const Icon(Icons.save),
       ),
     );

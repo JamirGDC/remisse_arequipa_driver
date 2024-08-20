@@ -12,9 +12,13 @@ import 'package:http/http.dart' as http;
 class CommonMethods {
   Future<void> checkConnectivity(BuildContext context) async {
     var connectionResult = await Connectivity().checkConnectivity();
-    if (connectionResult.isNotEmpty && connectionResult[0] != ConnectivityResult.mobile && connectionResult[0] != ConnectivityResult.wifi) {
+    if (connectionResult.isNotEmpty &&
+        connectionResult[0] != ConnectivityResult.mobile &&
+        connectionResult[0] != ConnectivityResult.wifi) {
       if (!context.mounted) return;
-      displaysnackbar("Tu internet no está disponible. Revisa tu configuración de Internet", context);
+      displaysnackbar(
+          "Tu internet no está disponible. Revisa tu configuración de Internet",
+          context);
     }
   }
 
@@ -22,15 +26,14 @@ class CommonMethods {
     var snackBar = SnackBar(content: Text(messageText));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-  turnOffLocationUpdatesForHomePage()
-  {
+
+  turnOffLocationUpdatesForHomePage() {
     positionStreamHomePage!.pause();
 
     Geofire.removeLocation(FirebaseAuth.instance.currentUser!.uid);
   }
 
-  turnOnLocationUpdatesForHomePage()
-  {
+  turnOnLocationUpdatesForHomePage() {
     positionStreamHomePage!.resume();
 
     Geofire.setLocation(
@@ -40,64 +43,125 @@ class CommonMethods {
     );
   }
 
-  static sendRequestToAPI(String apiUrl) async
-  {
+  static sendRequestToAPI(String apiUrl) async {
     http.Response responseFromAPI = await http.get(Uri.parse(apiUrl));
 
-    try
-    {
-      if(responseFromAPI.statusCode == 200)
-      {
+    try {
+      if (responseFromAPI.statusCode == 200) {
         String dataFromApi = responseFromAPI.body;
         var dataDecoded = jsonDecode(dataFromApi);
         return dataDecoded;
-      }
-      else
-      {
+      } else {
         return "error";
       }
-    }
-    catch(errorMsg)
-    {
+    } catch (errorMsg) {
       return "error";
     }
   }
 
-  static Future<DirectionDetails?> getDirectionDetailsFromAPI(LatLng source, LatLng destination) async
-  {
-    String urlDirectionsAPI = "https://maps.googleapis.com/maps/api/directions/json?destination=${destination.latitude},${destination.longitude}&origin=${source.latitude},${source.longitude}&mode=driving&key=$googleMapKey";
+  static Future<DirectionDetails?> getDirectionDetailsFromAPI(
+      LatLng source, LatLng destination) async {
+    String urlDirectionsAPI =
+        "https://maps.googleapis.com/maps/api/directions/json?destination=${destination.latitude},${destination.longitude}&origin=${source.latitude},${source.longitude}&mode=driving&key=$googleMapKey";
 
     var responseFromDirectionsAPI = await sendRequestToAPI(urlDirectionsAPI);
 
-    if(responseFromDirectionsAPI == "error")
-    {
+    if (responseFromDirectionsAPI == "error") {
       return null;
     }
 
     DirectionDetails detailsModel = DirectionDetails();
 
-    detailsModel.distanceTextString = responseFromDirectionsAPI["routes"][0]["legs"][0]["distance"]["text"];
-    detailsModel.distanceValueDigits = responseFromDirectionsAPI["routes"][0]["legs"][0]["distance"]["value"];
+    detailsModel.distanceTextString =
+        responseFromDirectionsAPI["routes"][0]["legs"][0]["distance"]["text"];
+    detailsModel.distanceValueDigits =
+        responseFromDirectionsAPI["routes"][0]["legs"][0]["distance"]["value"];
 
-    detailsModel.durationTextString = responseFromDirectionsAPI["routes"][0]["legs"][0]["duration"]["text"];
-    detailsModel.durationValueDigits = responseFromDirectionsAPI["routes"][0]["legs"][0]["duration"]["value"];
+    detailsModel.durationTextString =
+        responseFromDirectionsAPI["routes"][0]["legs"][0]["duration"]["text"];
+    detailsModel.durationValueDigits =
+        responseFromDirectionsAPI["routes"][0]["legs"][0]["duration"]["value"];
 
-    detailsModel.encodedPoints = responseFromDirectionsAPI["routes"][0]["overview_polyline"]["points"];
+    detailsModel.encodedPoints =
+        responseFromDirectionsAPI["routes"][0]["overview_polyline"]["points"];
 
     return detailsModel;
   }
 
-  calculateFareAmount(DirectionDetails directionDetails)
-  {
+  calculateFareAmount(DirectionDetails directionDetails) {
     double distancePerKmAmount = 0.4;
     double durationPerMinuteAmount = 0.3;
     double baseFareAmount = 2;
 
-    double totalDistanceTravelFareAmount = (directionDetails.distanceValueDigits! / 1000) * distancePerKmAmount;
-    double totalDurationSpendFareAmount = (directionDetails.durationValueDigits! / 60) * durationPerMinuteAmount;
+    double totalDistanceTravelFareAmount =
+        (directionDetails.distanceValueDigits! / 1000) * distancePerKmAmount;
+    double totalDurationSpendFareAmount =
+        (directionDetails.durationValueDigits! / 60) * durationPerMinuteAmount;
 
-    double overAllTotalFareAmount = baseFareAmount + totalDistanceTravelFareAmount + totalDurationSpendFareAmount;
+    double overAllTotalFareAmount = baseFareAmount +
+        totalDistanceTravelFareAmount +
+        totalDurationSpendFareAmount;
 
     return overAllTotalFareAmount.toStringAsFixed(1);
   }
+
+  static Future<Map<String, String>> getLastFormFilledDate() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      // El usuario no está logueado
+      return {
+        "date": "No se ha podido obtener la información del usuario.",
+        "time": ""
+      };
+    }
+
+    String url =
+        "https://remisseaqp-dfd32-default-rtdb.firebaseio.com/drivers/${user.uid}/checklists.json";
+
+    var response = await sendRequestToAPI(url);
+
+    if (response == "error") {
+      return {
+        "date": "Error al obtener la información del formulario.",
+        "time": ""
+      };
+    }
+
+    if (response != null) {
+      // Convertimos los nodos en una lista y ordenamos por la fecha
+      List<dynamic> formsList = [];
+      response.forEach((key, value) {
+        formsList.add(value);
+      });
+
+      // Ordenamos los formularios por fecha de creación (createdAt) de más reciente a menos reciente
+      formsList.sort((a, b) {
+        DateTime dateA = DateTime.parse(a["createdAt"]);
+        DateTime dateB = DateTime.parse(b["createdAt"]);
+        return dateB
+            .compareTo(dateA); // Ordenar de más reciente a menos reciente
+      });
+
+     if (formsList.isNotEmpty) {
+      DateTime lastFormDateTime = DateTime.parse(formsList.first["createdAt"]);
+      String lastFormDate = "${lastFormDateTime.day}-${lastFormDateTime.month}-${lastFormDateTime.year}";
+      String lastFormHour = "${lastFormDateTime.hour}:${lastFormDateTime.minute.toString().padLeft(2, '0')}";
+      return {
+        "date": lastFormDate,
+        "time": lastFormHour
+      };
+    } else {
+      return {
+        "date": "Aún no has rellenado ningún formulario.",
+        "time": ""
+      };
+    }
+  } else {
+    return {
+      "date": "Aún no has rellenado ningún formulario.",
+      "time": ""
+    };
+  }
+}
 }
