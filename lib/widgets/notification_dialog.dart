@@ -132,7 +132,7 @@ class _NotificationDialogState extends State<NotificationDialog>
             const SizedBox(height: 30.0,),
 
             Image.asset(
-              "assets/images/uberexec.png",
+              "lib/assets/uberexec.png",
               width: 140,
             ),
 
@@ -170,7 +170,7 @@ class _NotificationDialogState extends State<NotificationDialog>
                     children: [
 
                       Image.asset(
-                        "assets/images/initial.png",
+                        "lib/assets/initial.png",
                         height: 16,
                         width: 16,
                       ),
@@ -200,7 +200,7 @@ class _NotificationDialogState extends State<NotificationDialog>
                     children: [
 
                       Image.asset(
-                        "assets/images/final.png",
+                        "lib/assets/final.png",
                         height: 16,
                         width: 16,
                       ),

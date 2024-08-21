@@ -16,7 +16,7 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def flutterVersionCode = localPro<zperties.getProperty("flutter.versionCode")
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
 if (flutterVersionCode == null) {
     flutterVersionCode = "1"
 }

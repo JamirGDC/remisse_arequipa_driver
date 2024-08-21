@@ -79,7 +79,7 @@ class _TripsPageState extends State<TripsPage>
                     ),
 
                     const Text(
-                      "Total Trips:",
+                      "Viajes Completados:",
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -126,7 +126,7 @@ class _TripsPageState extends State<TripsPage>
                       ),
 
                       const Text(
-                        "Check Trips History",
+                        "Historial de Servicios",
                         style: TextStyle(
                           color: Colors.white,
                         ),

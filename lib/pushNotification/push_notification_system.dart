@@ -1,4 +1,3 @@
-
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -27,6 +26,7 @@ class PushNotificationSystem
 
     firebaseCloudMessaging.subscribeToTopic("drivers");
     firebaseCloudMessaging.subscribeToTopic("users");
+    return null;
   }
 
   startListeningForNewNotification(BuildContext context) async
@@ -73,7 +73,7 @@ class PushNotificationSystem
     showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext context) => LoadingDialog(messageText: "getting details..."),
+        builder: (BuildContext context) => const LoadingDialog(messageText: "getting details..."),
     );
 
     DatabaseReference tripRequestsRef = FirebaseDatabase.instance.ref().child("tripRequests").child(tripID);

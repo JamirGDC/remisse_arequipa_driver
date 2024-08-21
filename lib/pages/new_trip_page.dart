@@ -492,7 +492,7 @@ class _NewTripPageState extends State<NewTripPage>
                       children: [
 
                         Image.asset(
-                          "assets/images/initial.png",
+                          "lib/assets/initial.png",
                           height: 16,
                           width: 16,
                         ),
@@ -518,7 +518,7 @@ class _NewTripPageState extends State<NewTripPage>
                       children: [
 
                         Image.asset(
-                          "assets/images/final.png",
+                          "lib/assets/final.png",
                           height: 16,
                           width: 16,
                         ),
