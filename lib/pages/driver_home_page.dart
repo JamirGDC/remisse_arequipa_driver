@@ -21,7 +21,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   DatabaseReference? newTripRequestReference;
   String lastFormDate = "cargando...";
   String lastFormHour = "cargando...";
-
+  int totalWorkMinutes = 0;
   final DatabaseReference _questionsRef =
       FirebaseDatabase.instance.ref().child('questions');
   final Map<String, String> _responses = {};
@@ -32,11 +32,23 @@ class _DriverHomePageState extends State<DriverHomePage> {
   @override
   void initState() {
     super.initState();
+    _isSaving = false;
     _getUserName();
-     _fetchLastFormDate().then((_) {
-    _checkFormCompletion();
-  });
+    _fetchLastFormDate().then((_) {
+      _checkFormCompletion();
+    });
     _loadQuestions();
+    _loadTotalWorkMinutes();
+  }
+
+  Future<void> _loadTotalWorkMinutes() async {
+    int minutes = await _getTotalWorkMinutes();
+    if (mounted) {
+      setState(() {
+        totalWorkMinutes = minutes;
+        _checkFormCompletion(); // Asegurarse de verificar después de cargar las horas trabajadas.
+      });
+    }
   }
 
   Future<void> _getUserName() async {
@@ -50,21 +62,23 @@ class _DriverHomePageState extends State<DriverHomePage> {
         DatabaseEvent event = await driversRef.once();
         DataSnapshot snapshot = event.snapshot;
 
-        if (snapshot.exists) {
+        if (snapshot.exists && mounted) {
           setState(() {
             driverName = snapshot.child('name').value as String? ?? 'Conductor';
           });
-        } else {
+        } else if (mounted) {
           setState(() {
             driverName = 'Conductor no encontrado';
           });
         }
       } catch (e) {
-        setState(() {
-          driverName = 'Error al obtener el nombre';
-        });
+        if (mounted) {
+          setState(() {
+            driverName = 'Error al obtener el nombre';
+          });
+        }
       }
-    } else {
+    } else if (mounted) {
       setState(() {
         driverName = 'Conductor no logueado';
       });
@@ -73,41 +87,42 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
   Future<void> _fetchLastFormDate() async {
     Map<String, String> dateTime = await CommonMethods.getLastFormFilledDate();
-    setState(() {
-      lastFormDate = dateTime["date"] ?? "Cargando...";
-      lastFormHour = dateTime["time"] ?? "";
-    });
-    
+    if (mounted) {
+      setState(() {
+        lastFormDate = dateTime["date"] ?? "Cargando...";
+        lastFormHour = dateTime["time"] ?? "";
+      });
+    }
   }
 
   Future<void> _checkFormCompletion() async {
+     final now = DateTime.now();
+  final today = '${now.day}-${now.month}-${now.year}';
 
-  // Obtén la fecha actual
-  final now = DateTime.now();
-  final today ='${now.day}-${now.month}-${now.year}';
-
-
- // Imprime las fechas para depuración
-  print("Fecha del último formulario: $lastFormDate");
-  print("Fecha de hoy: $today");
-  // Compara las fechas y habilita o deshabilita el switch
-  setState(() {
-    if (lastFormDate == today) {
-       print("Las fechas coinciden. Habilitando el switch.");
-      isSwitchEnabled = true;
-    } else {
-      print("Las fechas no coinciden. Deshabilitando el switch.");
-      isSwitchEnabled = false;
+  if (mounted) {
+    setState(() {
+      if (lastFormDate == today) {
+        // Si el formulario ya se completó hoy, el botón flotante debe estar deshabilitado
+        // y el switch habilitado solo si las horas trabajadas son menores de 7.
+        isSwitchEnabled = totalWorkMinutes < 420;
+        _isSaving = false; // El formulario ya se guardó hoy, por lo tanto, no estamos guardando ahora.
+      } else {
+        // Si no se ha completado el formulario hoy, el botón flotante debe estar habilitado
+        // para permitir que el usuario lo complete.
+        isSwitchEnabled = false;
+        _isSaving = false;
+      }
+      });
     }
-  });
   }
 
   void _loadQuestions() async {
-    _questionsRef.once().then((DatabaseEvent event) {
+    try {
+      DatabaseEvent event = await _questionsRef.once();
       final dataSnapshot = event.snapshot;
       List<Map<String, dynamic>> tempQuestions = [];
 
-      dataSnapshot.children.forEach((data) {
+      for (var data in dataSnapshot.children) {
         final String? key = data.key;
         final questionData = Map<String, dynamic>.from(data.value as Map);
 
@@ -118,19 +133,23 @@ class _DriverHomePageState extends State<DriverHomePage> {
           });
           _responses[key] = 'N/A';
         }
-      });
+      }
 
-      setState(() {
-        _questions = tempQuestions;
-      });
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al cargar las preguntas: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    });
+      if (mounted) {
+        setState(() {
+          _questions = tempQuestions;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar las preguntas: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   bool _validateResponses() {
@@ -138,8 +157,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
       if (response == 'N/A') {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Por favor, rellene todo el formulario antes de guardar.'),
+            content: Text('Por favor, rellene todo el formulario antes de guardar.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -150,9 +168,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
   }
 
   void _resetResponses() {
-    setState(() {
-      _responses.updateAll((key, value) => 'N/A');
-    });
+    if (mounted) {
+      setState(() {
+        _responses.updateAll((key, value) => 'N/A');
+      });
+    }
   }
 
   void _saveChecklist() async {
@@ -160,22 +180,26 @@ class _DriverHomePageState extends State<DriverHomePage> {
 
     if (!_validateResponses()) return;
 
-    setState(() {
-      _isSaving = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isSaving = true;
+      });
+    }
 
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debe estar autenticado para guardar el cuestionario'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      setState(() {
-        _isSaving = false;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Debe estar autenticado para guardar el cuestionario'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _isSaving = false;
+        });
+      }
       return;
     }
 
@@ -183,38 +207,87 @@ class _DriverHomePageState extends State<DriverHomePage> {
         FirebaseDatabase.instance.ref().child('drivers/${user.uid}/checklists');
 
     String checklistId = checklistRef.push().key!;
-    await checklistRef.child(checklistId).set({
-      'createdAt': DateTime.now().toIso8601String(),
-      'responses': _responses,
-    }).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cuestionario guardado con éxito'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      _resetResponses();
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar el cuestionario: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }).whenComplete(() async {
-    setState(() {
-      _isSaving = false;
-    });
 
-    // Espera a que _fetchLastFormDate se complete antes de continuar
-    await _fetchLastFormDate();
-    await _checkFormCompletion();
-  });
+    try {
+      await checklistRef.child(checklistId).set({
+        'createdAt': DateTime.now().toIso8601String(),
+        'responses': _responses,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cuestionario guardado con éxito'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _resetResponses();
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar el cuestionario: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      await _resetWorkHours(); // Resetea las horas trabajadas.
+
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          isSwitchEnabled = true; // Habilitar el switch después de guardar el formulario y resetear las horas.
+        });
+
+        await _fetchLastFormDate();
+        await _checkFormCompletion();
+      }
+    }
   }
 
-  void goOnlineNow() {
-    Geofire.initialize("onlineDrivers");
+  // Nueva función para reiniciar las horas trabajadas
+  Future<void> _resetWorkHours() async {
+    User? user = FirebaseAuth.instance.currentUser;
 
+    if (user != null) {
+      DatabaseReference workHoursRef = FirebaseDatabase.instance
+          .ref()
+          .child('drivers/${user.uid}/workHours');
+
+      String today = DateTime.now().toIso8601String().split('T')[0];
+      await workHoursRef.child('$today/totalHours').set(0);
+
+      if (mounted) {
+        setState(() {
+          totalWorkMinutes = 0;
+        });
+      }
+    }
+  }
+
+  void goOnlineNow() async {
+    int totalMinutes = await _getTotalWorkMinutes();
+
+    if (totalMinutes >= 420) { // 7 horas * 60 minutos = 420 minutos
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Jornada laboral de 7 horas terminada'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          isFichado = false;
+          isSwitchEnabled = false;
+        });
+      }
+      return;
+    }
+
+    Geofire.initialize("onlineDrivers");
+    await _saveWorkStartTime();
     Geofire.setLocation(
       FirebaseAuth.instance.currentUser!.uid,
       currentPositionOfDriver!.latitude,
@@ -231,16 +304,127 @@ class _DriverHomePageState extends State<DriverHomePage> {
     newTripRequestReference!.onValue.listen((event) {});
   }
 
-  void goOfflineNow() {
+  void goOfflineNow() async {
     Geofire.removeLocation(FirebaseAuth.instance.currentUser!.uid);
     newTripRequestReference!.onDisconnect();
     newTripRequestReference!.remove();
     newTripRequestReference = null;
+
+    await _saveWorkEndTimeAndCalculateHours();
+    await _loadTotalWorkMinutes();
+
+    int totalMinutes = await _getTotalWorkMinutes();
+    if (totalMinutes >= 420) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Jornada laboral de 7 horas terminada'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          isFichado = false;
+          isSwitchEnabled = false;
+        });
+      }
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _saveWorkStartTime() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      DatabaseReference workHoursRef = FirebaseDatabase.instance
+          .ref()
+          .child('drivers/${user.uid}/workHours');
+
+      String today = DateTime.now().toIso8601String().split('T')[0];
+      await workHoursRef.child('$today/startTimeWork').set(DateTime.now().toIso8601String());
+    }
+  }
+
+  Future<void> _saveWorkEndTimeAndCalculateHours() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      DatabaseReference workHoursRef = FirebaseDatabase.instance
+          .ref()
+          .child('drivers/${user.uid}/workHours');
+
+      String today = DateTime.now().toIso8601String().split('T')[0];
+      await workHoursRef.child('$today/endTimeWork').set(DateTime.now().toIso8601String());
+
+      DatabaseEvent startTimeEvent = await workHoursRef.child('$today/startTimeWork').once();
+      DatabaseEvent endTimeEvent = await workHoursRef.child('$today/endTimeWork').once();
+
+      DataSnapshot startTimeSnapshot = startTimeEvent.snapshot;
+      DataSnapshot endTimeSnapshot = endTimeEvent.snapshot;
+
+      if (startTimeSnapshot.exists && endTimeSnapshot.exists) {
+        DateTime startTime = DateTime.parse(startTimeSnapshot.value as String);
+        DateTime endTime = DateTime.parse(endTimeSnapshot.value as String);
+
+        Duration workDuration = endTime.difference(startTime);
+
+        DatabaseEvent totalMinutesEvent = await workHoursRef.child('$today/totalHours').once();
+        DataSnapshot totalMinutesSnapshot = totalMinutesEvent.snapshot;
+
+        int previousTotalMinutes = 0;
+        if (totalMinutesSnapshot.exists) {
+          previousTotalMinutes = totalMinutesSnapshot.value as int;
+        }
+
+        int newTotalMinutes = previousTotalMinutes + workDuration.inMinutes;
+
+        await workHoursRef.child('$today/totalHours').set(newTotalMinutes);
+
+        if (newTotalMinutes >= 420) {
+          if (mounted) {
+            setState(() {
+              isFichado = false;
+              isSwitchEnabled = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Jornada laboral de 7 horas terminada'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  Future<int> _getTotalWorkMinutes() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      DatabaseReference workHoursRef = FirebaseDatabase.instance
+          .ref()
+          .child('drivers/${user.uid}/workHours');
+
+      String today = DateTime.now().toIso8601String().split('T')[0];
+      DatabaseEvent totalMinutesEvent = await workHoursRef.child('$today/totalHours').once();
+      DataSnapshot totalMinutesSnapshot = totalMinutesEvent.snapshot;
+
+      if (totalMinutesSnapshot.exists) {
+        return totalMinutesSnapshot.value as int;
+      }
+    }
+
+    return 0;
   }
 
   @override
   Widget build(BuildContext context) {
     final String today = getFormattedDate();
+    final int hours = totalWorkMinutes ~/ 60;
+    final int minutes = totalWorkMinutes % 60;
 
     return Scaffold(
       appBar: AppBar(
@@ -286,13 +470,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.access_time, color: brandColor),
-                      SizedBox(width: 8.0),
+                      const Icon(Icons.access_time, color: brandColor),
+                      const SizedBox(width: 8.0),
                       Text(
-                        '0h 00m',
-                        style: TextStyle(
+                        '${hours}h ${minutes}m',
+                        style: const TextStyle(
                           fontSize: 24.0,
                           fontWeight: FontWeight.bold,
                           color: contrastColor,
@@ -332,22 +516,23 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                   if (isFichado) {
                                     Position positionOfUser =
                                         await Geolocator.getCurrentPosition(
-                                            desiredAccuracy: LocationAccuracy
-                                                .bestForNavigation);
+                                            desiredAccuracy: LocationAccuracy.bestForNavigation);
                                     currentPositionOfDriver = positionOfUser;
                                     goOnlineNow();
                                   } else {
                                     goOfflineNow();
                                   }
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(isFichado
-                                          ? 'Fichado con éxito'
-                                          : 'Desfichado con éxito'),
-                                      backgroundColor: acentColor,
-                                    ),
-                                  );
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(isFichado
+                                            ? 'Fichado con éxito'
+                                            : 'Desfichado con éxito'),
+                                        backgroundColor: acentColor,
+                                      ),
+                                    );
+                                  }
                                 }
                               : null,
                           activeColor: gradienteEndColor,
@@ -388,9 +573,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                           padding: const EdgeInsets.all(8.0),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            border: Border.all(
-                                color:
-                                    const Color.fromARGB(255, 252, 252, 252)),
+                            border: Border.all(color: const Color.fromARGB(255, 252, 252, 252)),
                             borderRadius: BorderRadius.circular(20.0),
                             boxShadow: [
                               BoxShadow(
@@ -407,8 +590,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                               Text(
                                 question['text'],
                                 style: const TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold),
+                                    fontSize: 16.0, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8.0),
                               Wrap(
@@ -420,12 +602,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
                                       Radio<String>(
                                         value: option,
                                         groupValue: _responses[question['id']],
-                                        activeColor: const Color.fromARGB(
-                                            255, 205, 87, 24),
+                                        activeColor: const Color.fromARGB(255, 205, 87, 24),
                                         onChanged: (String? value) {
-                                          setState(() {
-                                            _responses[question['id']] = value!;
-                                          });
+                                          if (mounted) {
+                                            setState(() {
+                                              _responses[question['id']] = value!;
+                                            });
+                                          }
                                         },
                                       ),
                                       Text(option),
@@ -443,8 +626,9 @@ class _DriverHomePageState extends State<DriverHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _isSaving ? null : _saveChecklist,
-        child: _isSaving ? CircularProgressIndicator() : const Icon(Icons.save),
+  onPressed: (_isSaving || isSwitchEnabled) ? null : _saveChecklist, 
+  // Habilitar si no está guardando y si el switch no está habilitado (es decir, si se puede guardar).
+  child: _isSaving ? const CircularProgressIndicator() : const Icon(Icons.save),
       ),
     );
   }
@@ -463,18 +647,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
   String getFormattedDate() {
     final now = DateTime.now();
     final months = [
-      'enero',
-      'febrero',
-      'marzo',
-      'abril',
-      'mayo',
-      'junio',
-      'julio',
-      'agosto',
-      'septiembre',
-      'octubre',
-      'noviembre',
-      'diciembre'
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
     ];
     return '${now.day} ${months[now.month - 1]}';
   }
