@@ -32,6 +32,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
   @override
   void initState() {
     super.initState();
+    _isSaving = false;
     _getUserName();
     _fetchLastFormDate().then((_) {
       _checkFormCompletion();
@@ -45,6 +46,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     if (mounted) {
       setState(() {
         totalWorkMinutes = minutes;
+        _checkFormCompletion(); // Asegurarse de verificar después de cargar las horas trabajadas.
       });
     }
   }
@@ -94,16 +96,22 @@ class _DriverHomePageState extends State<DriverHomePage> {
   }
 
   Future<void> _checkFormCompletion() async {
-    final now = DateTime.now();
-    final today = '${now.day}-${now.month}-${now.year}';
+     final now = DateTime.now();
+  final today = '${now.day}-${now.month}-${now.year}';
 
-    if (mounted) {
-      setState(() {
-        if (lastFormDate == today) {
-          isSwitchEnabled = true;
-        } else {
-          isSwitchEnabled = false;
-        }
+  if (mounted) {
+    setState(() {
+      if (lastFormDate == today) {
+        // Si el formulario ya se completó hoy, el botón flotante debe estar deshabilitado
+        // y el switch habilitado solo si las horas trabajadas son menores de 7.
+        isSwitchEnabled = totalWorkMinutes < 420;
+        _isSaving = false; // El formulario ya se guardó hoy, por lo tanto, no estamos guardando ahora.
+      } else {
+        // Si no se ha completado el formulario hoy, el botón flotante debe estar habilitado
+        // para permitir que el usuario lo complete.
+        isSwitchEnabled = false;
+        _isSaving = false;
+      }
       });
     }
   }
@@ -168,103 +176,96 @@ class _DriverHomePageState extends State<DriverHomePage> {
   }
 
   void _saveChecklist() async {
-  if (_isSaving) return;
+    if (_isSaving) return;
 
-  if (!_validateResponses()) return;
-
-  if (mounted) {
-    setState(() {
-      _isSaving = true;
-    });
-  }
-
-  User? user = FirebaseAuth.instance.currentUser;
-
-  if (user == null) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debe estar autenticado para guardar el cuestionario'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      setState(() {
-        _isSaving = false;
-      });
-    }
-    return;
-  }
-
-  final DatabaseReference checklistRef =
-      FirebaseDatabase.instance.ref().child('drivers/${user.uid}/checklists');
-
-  String checklistId = checklistRef.push().key!;
-
-  try {
-    await checklistRef.child(checklistId).set({
-      'createdAt': DateTime.now().toIso8601String(),
-      'responses': _responses,
-    });
-
-    print("Checklist guardado correctamente."); // Verifica que esto se imprime
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cuestionario guardado con éxito'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      _resetResponses();
-    }
-  } catch (error) {
-    print("Error al guardar el checklist: $error"); // Verifica si ocurre algún error
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar el cuestionario: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  } finally {
-    // Esta parte se ejecutará siempre, independientemente de si hubo error o no
-    await _resetWorkHours(); // Resetea las horas trabajadas
+    if (!_validateResponses()) return;
 
     if (mounted) {
       setState(() {
-        _isSaving = false;
-        isSwitchEnabled = false; // Desactivar el botón flotante
+        _isSaving = true;
+      });
+    }
+
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Debe estar autenticado para guardar el cuestionario'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _isSaving = false;
+        });
+      }
+      return;
+    }
+
+    final DatabaseReference checklistRef =
+        FirebaseDatabase.instance.ref().child('drivers/${user.uid}/checklists');
+
+    String checklistId = checklistRef.push().key!;
+
+    try {
+      await checklistRef.child(checklistId).set({
+        'createdAt': DateTime.now().toIso8601String(),
+        'responses': _responses,
       });
 
-      await _fetchLastFormDate();
-      await _checkFormCompletion();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cuestionario guardado con éxito'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _resetResponses();
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar el cuestionario: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      await _resetWorkHours(); // Resetea las horas trabajadas.
+
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          isSwitchEnabled = true; // Habilitar el switch después de guardar el formulario y resetear las horas.
+        });
+
+        await _fetchLastFormDate();
+        await _checkFormCompletion();
+      }
     }
   }
-}
 
   // Nueva función para reiniciar las horas trabajadas
-Future<void> _resetWorkHours() async {
+  Future<void> _resetWorkHours() async {
+    User? user = FirebaseAuth.instance.currentUser;
 
-   print("Intentando resetear horas trabajadas...");
-  User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DatabaseReference workHoursRef = FirebaseDatabase.instance
+          .ref()
+          .child('drivers/${user.uid}/workHours');
 
-  if (user != null) {
-    DatabaseReference workHoursRef = FirebaseDatabase.instance
-        .ref()
-        .child('drivers/${user.uid}/workHours');
+      String today = DateTime.now().toIso8601String().split('T')[0];
+      await workHoursRef.child('$today/totalHours').set(0);
 
-    String today = DateTime.now().toIso8601String().split('T')[0];
-    await workHoursRef.child('$today/totalHours').set(0);
-
-    if (mounted) {
-      setState(() {
-        totalWorkMinutes = 0;
-      });
+      if (mounted) {
+        setState(() {
+          totalWorkMinutes = 0;
+        });
+      }
     }
-    print("Work hours reset successfully.");
   }
-}
 
   void goOnlineNow() async {
     int totalMinutes = await _getTotalWorkMinutes();
@@ -625,9 +626,10 @@ Future<void> _resetWorkHours() async {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: (_isSaving || !isSwitchEnabled) ? null : _saveChecklist,
+  onPressed: (_isSaving || isSwitchEnabled) ? null : _saveChecklist, 
+  // Habilitar si no está guardando y si el switch no está habilitado (es decir, si se puede guardar).
   child: _isSaving ? const CircularProgressIndicator() : const Icon(Icons.save),
-),
+      ),
     );
   }
 
