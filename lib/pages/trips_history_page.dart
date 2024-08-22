@@ -28,13 +28,7 @@ class _TripsHistoryPageState extends State<TripsHistoryPage>
             color: Colors.white,
           ),
         ),
-        leading: IconButton(
-          onPressed: ()
-          {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back, color: Colors.white,),
-        ),
+       
       ),
       body: StreamBuilder(
         stream: completedTripRequestsOfCurrentDriver.onValue,

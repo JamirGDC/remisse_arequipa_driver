@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage>
 
           ///google map
           GoogleMap(
-            padding: const EdgeInsets.only(top: 50),
+            padding: const EdgeInsets.only(bottom: 50, right: 5, top: 50 ), // Mueve los controles de zoom hacia arriba y un poco hacia la izquierda
             mapType: MapType.normal,
             myLocationEnabled: true,
             initialCameraPosition: kArequipa,
