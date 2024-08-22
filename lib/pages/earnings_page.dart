@@ -54,7 +54,7 @@ class _EarningsPageState extends State<EarningsPage>
                 child: Column(
                   children: [
 
-                    Image.asset("assets/images/totalearnings.png", width: 120,),
+                    Image.asset("lib/assets/totalearnings.png", width: 120,),
 
                     const SizedBox(
                       height: 10,

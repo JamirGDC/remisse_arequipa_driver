@@ -175,7 +175,7 @@ class SelectLocationOnMapPage extends StatefulWidget {
 }
 
 class _SelectLocationOnMapPageState extends State<SelectLocationOnMapPage> {
-  LatLng _initialPosition = const LatLng(-12.0464, -77.0428); // Coordenadas iniciales
+  final LatLng _initialPosition = const LatLng(-16.409047, -71.537451);// Coordenadas iniciales
   LatLng? _selectedPosition;
 
   @override
