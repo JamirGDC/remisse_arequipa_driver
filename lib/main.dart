@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'authentication/login_screen.dart';
-
+import 'package:remisse_arequipa_driver/pages/drivermainscreen.dart';
 
 Future<void> main() async
 {
@@ -38,12 +38,17 @@ class MyApp extends StatelessWidget
   Widget build(BuildContext context)
   {
     return MaterialApp(
-      title: 'Drivers App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
+     theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.grey,
+        ).copyWith(
+          primary: Colors.black,
+          secondary: Colors.black,
+        ),
+        useMaterial3: true,
       ),
-      home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : Dashboard(),
+      //home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : Dashboard(),
+      home: const DriverMainScreen(),
     );
   }
 }
