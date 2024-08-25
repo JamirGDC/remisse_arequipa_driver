@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage>
 
           ///google map
           GoogleMap(
-            padding: const EdgeInsets.only(bottom: 50, right: 5, top: 50 ), // Mueve los controles de zoom hacia arriba y un poco hacia la izquierda
+            padding: const EdgeInsets.only(bottom: 50, right: 3, top: 130 ), // Mueve los controles de zoom hacia arriba y un poco hacia la izquierda
             mapType: MapType.normal,
             myLocationEnabled: true,
             initialCameraPosition: kArequipa,
@@ -149,160 +149,160 @@ class _HomePageState extends State<HomePage>
             },
           ),
 
-          // Container(
-          //   height: 136,
-          //   width: double.infinity,
-          //   color: Colors.black54,
-          // ),
+          Container(
+            height: 136,
+            width: double.infinity,
+            color: Colors.black54,
+          ),
 
-          ///go online offline button
-          // Positioned(
-          //   top: 61,
-          //   left: 0,
-          //   right: 0,
-          //   child: Row(
-          //     mainAxisAlignment: MainAxisAlignment.center,
-          //     children: [
+          //go online offline button
+          Positioned(
+            top: 61,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
 
-          //       ElevatedButton(
-          //         onPressed: ()
-          //         {
-          //           showModalBottomSheet(
-          //               context: context,
-          //               isDismissible: false,
-          //               builder: (BuildContext context)
-          //               {
-          //                 return Container(
-          //                   decoration: const BoxDecoration(
-          //                     color: Colors.black87,
-          //                     boxShadow:
-          //                     [
-          //                       BoxShadow(
-          //                         color: Colors.grey,
-          //                         blurRadius: 5.0,
-          //                         spreadRadius: 0.5,
-          //                         offset: Offset(
-          //                           0.7,
-          //                           0.7,
-          //                         ),
-          //                       ),
-          //                     ],
-          //                   ),
-          //                   height: 221,
-          //                   child: Padding(
-          //                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-          //                     child: Column(
-          //                       children: [
+                ElevatedButton(
+                  onPressed: ()
+                  {
+                    showModalBottomSheet(
+                        context: context,
+                        isDismissible: false,
+                        builder: (BuildContext context)
+                        {
+                          return Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black87,
+                              boxShadow:
+                              [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  blurRadius: 5.0,
+                                  spreadRadius: 0.5,
+                                  offset: Offset(
+                                    0.7,
+                                    0.7,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            height: 221,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                              child: Column(
+                                children: [
 
-          //                         const SizedBox(height:  11,),
+                                  const SizedBox(height:  11,),
 
-          //                         Text(
-          //                             (!isDriverAvailable) ? "Conectarse" : "Desconectarse",
-          //                           textAlign: TextAlign.center,
-          //                           style: const TextStyle(
-          //                             fontSize: 22,
-          //                             color: Colors.white70,
-          //                             fontWeight: FontWeight.bold,
-          //                           ),
-          //                         ),
+                                  Text(
+                                      (!isDriverAvailable) ? "Conectarse" : "Desconectarse",
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
 
-          //                         const SizedBox(height: 21,),
+                                  const SizedBox(height: 21,),
 
-          //                         Text(
-          //                           (!isDriverAvailable)
-          //                               ? "Tu estado sera conectado, recibirás nuevas solicitudes de viaje de los usuarios."
-          //                               : "Tu estado sera desconectado, no recibirás nuevas solicitudes de viaje de los usuarios.",
-          //                           textAlign: TextAlign.center,
-          //                           style: const TextStyle(
-          //                             color: Colors.white30,
-          //                           ),
-          //                         ),
+                                  Text(
+                                    (!isDriverAvailable)
+                                        ? "Tu estado sera conectado, recibirás nuevas solicitudes de viaje de los usuarios."
+                                        : "Tu estado sera desconectado, no recibirás nuevas solicitudes de viaje de los usuarios.",
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white30,
+                                    ),
+                                  ),
 
-          //                         const SizedBox(height: 25,),
+                                  const SizedBox(height: 25,),
 
-          //                         Row(
-          //                           children: [
+                                  Row(
+                                    children: [
 
-          //                             Expanded(
-          //                               child: ElevatedButton(
-          //                                 onPressed: ()
-          //                                 {
-          //                                   Navigator.pop(context);
-          //                                 },
-          //                                 child: const Text(
-          //                                   "Volver"
-          //                                 ),
-          //                               ),
-          //                             ),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: ()
+                                          {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            "Volver"
+                                          ),
+                                        ),
+                                      ),
 
-          //                             const SizedBox(width: 16,),
+                                      const SizedBox(width: 16,),
 
-          //                             Expanded(
-          //                               child: ElevatedButton(
-          //                                 onPressed: ()
-          //                                 {
-          //                                   if(!isDriverAvailable)
-          //                                   {
-          //                                     //go online
-          //                                     goOnlineNow();
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: ()
+                                          {
+                                            if(!isDriverAvailable)
+                                            {
+                                              //go online
+                                              goOnlineNow();
 
-          //                                     //get driver location updates
-          //                                     setAndGetLocationUpdates();
+                                              //get driver location updates
+                                              setAndGetLocationUpdates();
 
-          //                                     Navigator.pop(context);
+                                              Navigator.pop(context);
 
-          //                                     setState(() {
-          //                                       colorToShow = Colors.pink;
-          //                                       titleToShow = "Desconectarse";
-          //                                       isDriverAvailable = true;
-          //                                     });
-          //                                   }
-          //                                   else
-          //                                   {
-          //                                     //go offline
-          //                                     goOfflineNow();
+                                              setState(() {
+                                                colorToShow = Colors.pink;
+                                                titleToShow = "Desconectarse";
+                                                isDriverAvailable = true;
+                                              });
+                                            }
+                                            else
+                                            {
+                                              //go offline
+                                              goOfflineNow();
 
-          //                                     Navigator.pop(context);
+                                              Navigator.pop(context);
 
-          //                                     setState(() {
-          //                                       colorToShow = Colors.green;
-          //                                       titleToShow = "Desconectarse";
-          //                                       isDriverAvailable = false;
-          //                                     });
-          //                                   }
-          //                                 },
-          //                                 style: ElevatedButton.styleFrom(
-          //                                   backgroundColor: (titleToShow == "Conectarse")
-          //                                       ? Colors.green
-          //                                       : Colors.pink,
-          //                                 ),
-          //                                 child: const Text(
-          //                                     "Confirmar"
-          //                                 ),
-          //                               ),
-          //                             ),
+                                              setState(() {
+                                                colorToShow = Colors.green;
+                                                titleToShow = "Desconectarse";
+                                                isDriverAvailable = false;
+                                              });
+                                            }
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: (titleToShow == "Conectarse")
+                                                ? Colors.green
+                                                : Colors.pink,
+                                          ),
+                                          child: const Text(
+                                              "Confirmar"
+                                          ),
+                                        ),
+                                      ),
 
-          //                           ],
-          //                         ),
+                                    ],
+                                  ),
 
-          //                       ],
-          //                     ),
-          //                   ),
-          //                 );
-          //               }
-          //           );
-          //         },
-          //         style: ElevatedButton.styleFrom(
-          //           backgroundColor: colorToShow,
-          //         ),
-          //         child: Text(
-          //           titleToShow,
-          //         ),
-          //       ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorToShow,
+                  ),
+                  child: Text(
+                    titleToShow,
+                  ),
+                ),
 
-          //     ],
-          //   ),
-          // ),
+              ],
+            ),
+          ),
 
         ],
       ),
