@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:remisse_arequipa_driver/pages/dashboard.dart';
-import 'authentication/login_screen.dart';
+import 'package:remisse_arequipa_driver/authentication/welcome.dart';
+import 'package:remisse_arequipa_driver/widgets/splash_Screen.dart';
 
+import 'package:sizer/sizer.dart';
 
 Future<void> main() async
 {
@@ -30,23 +30,41 @@ Future<void> main() async
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget
-{
+
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context)
-  {
-    return MaterialApp(
-      title: 'Drivers App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
-      ),
-      home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : Dashboard(),
+  Widget build(BuildContext context) {
+    return Sizer(
+      builder: (context, orientation, deviceType) => MaterialApp(
+          theme: ThemeData(fontFamily: 'Satoshi'),
+           home: const SplashScreen()),
     );
   }
 }
+
+
+
+// class MyApp extends StatelessWidget
+// {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context)
+//   {
+//     return MaterialApp(
+//       title: 'Drivers App',
+//       debugShowCheckedModeBanner: false,
+//       theme: ThemeData.dark().copyWith(
+//         scaffoldBackgroundColor: Colors.black,
+//       ),
+      
+//       home: const WelcomePage(),
+//       // home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : Dashboard(),
+//     );
+//   }
+// }
 
 
 // import 'package:firebase_auth/firebase_auth.dart';

@@ -1,13 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
-import 'package:remisse_arequipa_driver/global.dart';
-import 'package:remisse_arequipa_driver/methods/common_methods.dart';
-import 'package:remisse_arequipa_driver/pages/dashboard.dart';
-import 'package:remisse_arequipa_driver/pages/home_page.dart';
-import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
+import 'package:iconly/iconly.dart';
+import 'package:sizer/sizer.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,436 +12,265 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _obscureText = true;
-
-  final FocusNode _emailFocusNode = FocusNode();
-  final FocusNode _passwordFocusNode = FocusNode();
-
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  CommonMethods cMethods = CommonMethods();
-
-  checkIfNetworkIsAvailable() {
-    cMethods.checkConnectivity(context);
-    signInFormValidation();
-  }
-
-  signInFormValidation() {
-    if (_emailController.text.trim().isEmpty) {
-      cMethods.displaysnackbar(
-          "Por favor ingrese su correo electrónico", context);
-      return;
-    } else if (!_emailController.text.contains("@")) {
-      cMethods.displaysnackbar(
-          "Por favor ingrese su correo electrónico valido", context);
-      return;
-    } else if (_passwordController.text.isEmpty) {
-      cMethods.displaysnackbar("Por favor ingrese su contraseña", context);
-      return;
-    } else {
-      signInUser();
-    }
-  }
-
-  signInUser() async
-  {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => LoadingDialog(messageText: "Allowing you to Login..."),
-    );
-
-    final User? userFirebase = (
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        ).catchError((errorMsg)
-        {
-          Navigator.pop(context);
-          cMethods.displaysnackbar(errorMsg.toString(), context);
-        })
-    ).user;
-
-    if(!context.mounted) return;
-    Navigator.pop(context);
-
-    if(userFirebase != null)
-    {
-      DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("drivers").child(userFirebase.uid);
-      usersRef.once().then((snap)
-      {
-        if(snap.snapshot.value != null)
-        {
-          if((snap.snapshot.value as Map)["blockStatus"] == "no")
-          {
-            //userName = (snap.snapshot.value as Map)["name"];
-            Navigator.push(context, MaterialPageRoute(builder: (c)=> Dashboard()));
-          }
-          else
-          {
-            FirebaseAuth.instance.signOut();
-            cMethods.displaysnackbar("you are blocked. Contact admin: alizeb875@gmail.com", context);
-          }
-        }
-        else
-        {
-          FirebaseAuth.instance.signOut();
-          cMethods.displaysnackbar("your record do not exists as a Driver.", context);
-        }
-      });
-    }
-  }
-
+  var focusNodeEmail = FocusNode();
+  var focusNodePassword = FocusNode();
+  bool isFocusedEmail = false;
+  bool isFocusedPassword = false;
 
   @override
   void initState() {
+    focusNodeEmail.addListener(() {
+      setState(() {
+        isFocusedEmail = focusNodeEmail.hasFocus;
+      });
+    });
+    focusNodePassword.addListener(() {
+      setState(() {
+        isFocusedPassword = focusNodePassword.hasFocus;
+      });
+    });
     super.initState();
-    _emailFocusNode.addListener(() {
-      setState(() {});
-    });
-    _passwordFocusNode.addListener(() {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _emailFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Inicializa ScreenUtil
-    ScreenUtil.init(
-      context,
-      designSize: const Size(360, 690), // Tamaño de diseño base
-      minTextAdapt: true,
-      splitScreenMode: true,
-    );
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            colors: [
-              gradienteEndColor, // Reemplazado con la variable global gradienteEndColor
-              brandColor, // Reemplazado con la variable global brandColor
-            ],
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(height: 30),
-              Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Column(
-                    children: <Widget>[
-                      CircleAvatar(
-                        radius: 70, // Tamaño del logo redondeado
-                        backgroundColor: neutralColor, // Reemplazado con la variable global neutralColor
-                        child: ClipOval(
-                          child: Image.asset(
-                            'lib/assets/logo.png', // Ruta de la imagen del logo en assets
-                            fit: BoxFit.cover,
-                            width: 140, // Ajusta el ancho según el tamaño de tu logo
-                            height: 140, // Ajusta la altura según el tamaño de tu logo
+      body: Column(
+        children: [
+          Expanded(
+              child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Container(
+              height: 100.h,
+              decoration: const BoxDecoration(color: Colors.white),
+              padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 5.h,
+                  ),
+                  FadeInDown(
+                    delay: const Duration(milliseconds: 900),
+                    duration: const Duration(milliseconds: 1000),
+                    child: IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          IconlyBroken.arrow_left,
+                          size: 3.6.h,
+                        )),
+                  ),
+                  SizedBox(
+                    height: 2.h,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FadeInDown(
+                        delay: const Duration(milliseconds: 800),
+                        duration: const Duration(milliseconds: 900),
+                        child: Text(
+                          'Bienvenido De Nuevo!',
+                          style: TextStyle(
+                            fontSize: 23.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      FadeInDown(
+                        delay: const Duration(milliseconds: 700),
+                        duration: const Duration(milliseconds: 800),
+                        child: Text(
+                          'Vamos a Iniciar Sesión',
+                          style: TextStyle(
+                            fontSize: 21.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      FadeInDown(
+                        delay: const Duration(milliseconds: 600),
+                        duration: const Duration(milliseconds: 700),
+                        child: Text(
+                          'Introduce tu email y contraseña para continuar',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      )
                     ],
                   ),
-                ),
-
-              const SizedBox(height: 50), // tamaño del contenedor blanco y logo
-              Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: neutralColor, // Reemplazado con la variable global neutralColor
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
+                  SizedBox(
+                    height: 5.h,
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      const Text(
-                        '¡Hola de nuevo!',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: contrastColor, // Reemplazado con la variable global contrastColor
-                        ),
+                  FadeInDown(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text(
+                      'Email',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: _emailController,
-                          focusNode: _emailFocusNode,
-                          keyboardType: TextInputType.emailAddress,
-                          style: TextStyle(
-                            color: _emailFocusNode.hasFocus
-                                ? gradienteEndColor // Reemplazado con la variable global gradienteEndColor
-                                : contrastColor, // Reemplazado con la variable global contrastColor
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Correo Electrónico',
-                            labelStyle: TextStyle(
-                              color: _emailFocusNode.hasFocus
-                                  ? gradienteEndColor // Reemplazado con la variable global gradienteEndColor
-                                  : contrastColor, // Reemplazado con la variable global contrastColor
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: gradienteEndColor, // Reemplazado con la variable global gradienteEndColor
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: contrastColor, // Reemplazado con la variable global contrastColor
-                              ),
-                            ),
-                          ),
-                        ),
+                    ),
+                  ),
+                  FadeInDown(
+                    delay: const Duration(milliseconds: 600),
+                    duration: const Duration(milliseconds: 700),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 0.8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+                      decoration: BoxDecoration(
+                          color:
+                              isFocusedEmail ? Colors.white : const Color(0xFFF1F0F5),
+                          border:
+                              Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            if (isFocusedEmail)
+                              BoxShadow(
+                                  color: const Color(0xFF835DF1).withOpacity(.3),
+                                  blurRadius: 4.0,
+                                  spreadRadius: 2.0
+                                  // Glow Color
+                                  )
+                          ]),
+                      child: TextField(
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        decoration: const InputDecoration(
+                            border: InputBorder.none, hintText: 'Tu Email'),
+                        focusNode: focusNodeEmail,
                       ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: _passwordController,
-                          focusNode: _passwordFocusNode,
-                          obscureText: _obscureText,
-                          style: TextStyle(
-                            color: _passwordFocusNode.hasFocus
-                                ? gradienteEndColor // Reemplazado con la variable global gradienteEndColor
-                                : contrastColor, // Reemplazado con la variable global contrastColor
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            labelStyle: TextStyle(
-                              color: _passwordFocusNode.hasFocus
-                                  ? gradienteEndColor // Reemplazado con la variable global gradienteEndColor
-                                  : contrastColor, // Reemplazado con la variable global contrastColor
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: gradienteEndColor, // Reemplazado con la variable global gradienteEndColor
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: contrastColor, // Reemplazado con la variable global contrastColor
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: _passwordFocusNode.hasFocus
-                                    ? gradienteEndColor // Reemplazado con la variable global gradienteEndColor
-                                    : contrastColor, // Reemplazado con la variable global contrastColor
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 2.h,
+                  ),
+                  FadeInDown(
+                    delay: const Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 600),
+                    child: const Text(
+                      'Contraseña',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 0),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            // Acción para "Olvide mi contraseña"
-                          },
-                          child:const Text(
-                            "Olvide mi contraseña",
-                            style: TextStyle(color: brandColor), // Reemplazado con la variable global gradienteEndColor
-                          ),
-                        ),
+                    ),
+                  ),
+                  FadeInDown(
+                    delay: const Duration(milliseconds: 400),
+                    duration: const Duration(milliseconds: 500),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 0.8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+                      decoration: BoxDecoration(
+                          color: isFocusedPassword
+                              ? Colors.white
+                              : const Color(0xFFF1F0F5),
+                          border:
+                              Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            if (isFocusedPassword)
+                              BoxShadow(
+                                  color: const Color(0xFF835DF1).withOpacity(.3),
+                                  blurRadius: 4.0,
+                                  spreadRadius: 2.0
+                                  // Glow Color
+                                  )
+                          ]),
+                      child: TextField(
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        decoration: InputDecoration(
+                            suffixIcon: Icon(
+                              Icons.visibility_off_outlined,
+                              color: Colors.grey,
+                              size: 16.sp,
+                            ),
+                            border: InputBorder.none,
+                            hintText: 'Contraseña'),
+                        focusNode: focusNodePassword,
                       ),
-                      const SizedBox(height: 0),
-                      SizedBox(
-                        width: 400,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Acción al presionar el botón de Ingresar
-                            checkIfNetworkIsAvailable();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 50, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            backgroundColor: brandColor, // Reemplazado con la variable global gradienteEndColor
-                          ),
-                          child: const Text(
-                            'Ingresar',
-                            style: TextStyle(color: neutralColor, fontSize: 18), // Reemplazado con la variable global neutralColor
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Añadir un separador con "OR"
-                      const Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: mutedColor, // Reemplazado con la variable global mutedColor
-                              indent: 30,
-                              endIndent: 10,
-                            ),
-                          ),
-                          Text(
-                            "OR",
-                            style: TextStyle(
-                              color: mutedColor, // Reemplazado con la variable global mutedColor
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: mutedColor, // Reemplazado con la variable global mutedColor
-                              indent: 10,
-                              endIndent: 30,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Botones de Google y Apple
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Acción al presionar el botón de Google
-                            },
+                    ),
+                  ),
+                  const Expanded(
+                      child: SizedBox(
+                    height: 10,
+                  )),
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 600),
+                    duration: const Duration(milliseconds: 700),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {},
                             style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 10
-                                    .w, // Cambia el padding horizontal y vertical a porcentajes
-                                vertical: 10.h,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              backgroundColor: acentColor, // Reemplazado con la variable global acentColor
-                              side: const BorderSide(
-                                  color:acentColor),
-                              minimumSize: Size(0.4.sw,
-                                  0.06.sh), // 40% del ancho y 6% de la altura de la pantalla
-                            ),
-                            icon: Image.asset(
-                              'lib/assets/google.png',
-                              width: 20
-                                  .w, // Ajusta el tamaño del icono a proporciones relativas
-                              height: 20.h,
-                            ),
-                            label: const Text(
-                              'Google',
-                              style: TextStyle(
-                                  color: neutralColor),
-                            ),
+                                elevation: 0,
+                                textStyle: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Satoshi'),
+                                backgroundColor: const Color(0xFF835DF1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16)),
+                            child: FadeInUp(
+                                delay: const Duration(milliseconds: 700),
+                                duration: const Duration(milliseconds: 800),
+                                child: const Text('Sign In')),
                           ),
-                          SizedBox(
-                              width: 10
-                                  .w), // Cambia el ancho del SizedBox a un valor relativo
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Acción al presionar el botón de Apple
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 30
-                                    .w, // Cambia el padding horizontal y vertical a porcentajes
-                                vertical: 10.h,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              backgroundColor: contrastColor, // Reemplazado con la variable global contrastColor
-                              side: const BorderSide(
-                                  color: contrastColor), // Reemplazado con la variable global contrastColor
-                              minimumSize: Size(0.4.sw,
-                                  0.06.sh), // 40% del ancho y 6% de la altura de la pantalla
-                            ),
-                            icon: Icon(
-                              Icons.apple,
-                              size: 24
-                                  .w, // Ajusta el tamaño del icono a proporciones relativas
-                              color: neutralColor, // Reemplazado con la variable global neutralColor
-                            ),
-                            label: const Text(
-                              'Apple',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 247, 245, 243)),
-                            ),
+                        )
+                      ],
+                    ),
+                  ),
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 800),
+                    duration: const Duration(milliseconds: 900),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Aún No Tienes Cuenta?',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Texto "Don't have an account?" seguido de un botón "Sign Up"
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "¿No tienes una cuenta?",
-                            style: TextStyle(
-                              color: mutedColor, // Reemplazado con la variable global mutedColor
-                              fontSize: 16,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (c) => const SignupScreen()));
-                            },
+                        ),
+                        TextButton(
+                            onPressed: () {},
                             child: const Text(
-                              'Registrarse',
-                              style:TextStyle(
-                                color: brandColor, // Reemplazado con la variable global gradienteEndColor
-                                fontSize: 16,
+                              'Registrate',
+                              style: TextStyle(
+                                color: Color(0xFF835DF1),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                            ))
+                      ],
+                    ),
+                  )
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          ))
+        ],
       ),
     );
   }
 }
+
+
+
+

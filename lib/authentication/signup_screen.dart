@@ -7,10 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:remisse_arequipa_driver/authentication/login_screen.dart';
-import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
-import 'package:remisse_arequipa_driver/pages/home_page.dart';
 import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
 
 class SignupScreen extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:remisse_arequipa_driver/authentication/login_screen.dart';
 import 'package:remisse_arequipa_driver/global.dart';
-import 'package:remisse_arequipa_driver/pages/assign_route_page';
+import 'package:remisse_arequipa_driver/pages/assign_route_page.dart';
 import 'package:remisse_arequipa_driver/pages/create_client_page.dart';
 
 class ProfilePage extends StatefulWidget {

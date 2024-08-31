@@ -4,7 +4,6 @@ import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
 import 'package:remisse_arequipa_driver/pages/profile_page.dart';
 import 'package:remisse_arequipa_driver/pages/trips_history_page.dart';
-import 'package:remisse_arequipa_driver/pages/trips_page.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});

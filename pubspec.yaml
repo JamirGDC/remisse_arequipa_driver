@@ -16,7 +16,6 @@ dependencies:
   cupertino_icons: ^1.0.6
   firebase_auth: ^5.1.4
   firebase_database: ^11.0.4
-  flutter_screenutil: ^5.9.3
   intl_phone_field: ^3.2.0
   connectivity_plus: ^6.0.4
   google_maps_flutter: ^2.8.0
@@ -40,6 +39,12 @@ dependencies:
   path_provider: ^2.1.4
   image: ^4.2.0
   flutter_image_compress: ^2.3.0
+  sizer: ^2.0.15
+  iconly: ^1.0.1
+  animate_do: ^3.0.2
+  lottie: ^3.1.2
+  animated_splash_screen: ^1.3.0
+  flutter_native_splash: ^2.4.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -81,6 +86,8 @@ flutter:
     - lib/assets/uberexec.png
     - lib/assets/night_style.json
     - lib/assets/logo.png
+    - lib/assets/loginImage.png
+    - lib/assets/splash.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:
