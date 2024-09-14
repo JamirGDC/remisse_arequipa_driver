@@ -1,173 +1,49 @@
 import 'dart:io';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:iconly/iconly.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:remisse_arequipa_driver/authentication/login_screen.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
-import 'package:remisse_arequipa_driver/pages/dashboard.dart';
-import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
+import 'package:sizer/sizer.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  State createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
-  bool _obscureText = true;
-  bool _termsAccepted = false;
-
-  final FocusNode _nameFocusNode = FocusNode();
-  final FocusNode _lastNameFocusNode = FocusNode();
-
-  final FocusNode _emailFocusNode = FocusNode();
-  final FocusNode _passwordFocusNode = FocusNode();
-  final FocusNode _confirmPasswordFocusNode = FocusNode();
-
-    final FocusNode _vehicleModelFocusNode = FocusNode();
-    final FocusNode _vehicleColorFocusNode = FocusNode();
-    final FocusNode _vehicleNumberFocusNode = FocusNode();
-
-
+class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMixin{
+  final PageController _pageController = PageController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-
-  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _carModelController = TextEditingController();
+  final TextEditingController _carColorController = TextEditingController();
+  final TextEditingController _carPlateController = TextEditingController();
 
-  TextEditingController userNameTextEditingController = TextEditingController();
-  TextEditingController userLastNameTextEditingController = TextEditingController();
-  TextEditingController userPhoneTextEditingController = TextEditingController();
-  TextEditingController emailTextEditingController = TextEditingController();
-  TextEditingController passwordTextEditingController = TextEditingController();
-  TextEditingController vehicleModelTextEditingController = TextEditingController();
-  TextEditingController vehicleColorTextEditingController = TextEditingController();
-  TextEditingController vehicleNumberTextEditingController = TextEditingController();
+  var focusNodeEmail = FocusNode();
+  var focusNodePassword = FocusNode();
+  var focusNodeName = FocusNode();
+  var focusNodeCarModel = FocusNode();
+  var focusNodeCarColor = FocusNode();
+  var focusNodeCarPlate = FocusNode();
 
-  CommonMethods cMethods = CommonMethods();
+  bool isFocusedEmail = false;
+  bool isFocusedPassword = false;
+  bool isFocusedName = false;
+  bool isFocusedCarModel = false;
+  bool isFocusedCarColor = false;
+  bool isFocusedCarPlate = false;
+  bool _isPasswordVisible = false;
+
   XFile? imageFile;
+
+  int _currentPage = 0;
+  CommonMethods cMethods = CommonMethods();
   String urlOfUploadedImage = "";
 
-  checkIfNetworkIsAvailable()
-  {
-    cMethods.checkConnectivity(context);
-
-    if(imageFile != null) //image validation
-    {
-      signUpFormValidation();
-    }
-    else
-    {
-      cMethods.displaysnackbar("Please choose image first.", context);
-    }
-  }
-
-  signUpFormValidation()
-  {
-    if(userNameTextEditingController.text.trim().length < 3)
-    {
-      cMethods.displaysnackbar("your name must be atleast 4 or more characters.", context);
-    }
-    else if(userPhoneTextEditingController.text.trim().length < 7)
-    {
-      cMethods.displaysnackbar("your phone number must be atleast 8 or more characters.", context);
-    }
-    else if(!emailTextEditingController.text.contains("@"))
-    {
-      cMethods.displaysnackbar("please write valid email.", context);
-    }
-    else if(passwordTextEditingController.text.trim().length < 5)
-    {
-      cMethods.displaysnackbar("your password must be atleast 6 or more characters.", context);
-    }
-    else if(vehicleModelTextEditingController.text.trim().isEmpty)
-    {
-      cMethods.displaysnackbar("please write your car model", context);
-    }
-    else if(vehicleColorTextEditingController.text.trim().isEmpty)
-    {
-      cMethods.displaysnackbar("please write your car color.", context);
-    }
-    else if(vehicleNumberTextEditingController.text.isEmpty)
-    {
-      cMethods.displaysnackbar("please write your car number.", context);
-    }
-    else
-    {
-      uploadImageToStorage();
-    }
-  }
-
-  uploadImageToStorage() async
-  {
-    String imageIDName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference referenceImage = FirebaseStorage.instance.ref().child("Images").child(imageIDName);
-
-    UploadTask uploadTask = referenceImage.putFile(File(imageFile!.path));
-    TaskSnapshot snapshot = await uploadTask;
-    urlOfUploadedImage = await snapshot.ref.getDownloadURL();
-
-    setState(() {
-      urlOfUploadedImage;
-    });
-
-    registerNewDriver();
-  }
-
-  registerNewDriver() async
-  {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => const LoadingDialog(messageText: "Registering your account..."),
-    );
-
-    final User? userFirebase = (
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailTextEditingController.text.trim(),
-        password: passwordTextEditingController.text.trim(),
-      ).catchError((errorMsg)
-      {
-        Navigator.pop(context);
-        cMethods.displaysnackbar(errorMsg.toString(), context);
-      })
-    ).user;
-
-    if(!context.mounted) return;
-    Navigator.pop(context);
-
-    DatabaseReference usersRef = FirebaseDatabase.instance.ref().child("drivers").child(userFirebase!.uid);
-
-    Map driverCarInfo =
-    {
-      "carColor": vehicleColorTextEditingController.text.trim(),
-      "carModel": vehicleModelTextEditingController.text.trim(),
-      "carNumber": vehicleNumberTextEditingController.text.trim(),
-    };
-    
-    Map driverDataMap =
-    {
-      "photo": urlOfUploadedImage,
-      "car_details": driverCarInfo,
-      "name": userNameTextEditingController.text.trim(),
-      "email": emailTextEditingController.text.trim(),
-      "phone": userPhoneTextEditingController.text.trim(),
-      "id": userFirebase.uid,
-      "blockStatus": "no",
-    };
-    usersRef.set(driverDataMap);
-
-    Navigator.push(context, MaterialPageRoute(builder: (c)=> const Dashboard()));
-  }
-
+  
   chooseImageFromGallery() async
   {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -180,48 +56,585 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _emailFocusNode.addListener(() {
-      setState(() {});
-    });
-    _passwordFocusNode.addListener(() {
-      setState(() {});
-    });
+
+  void _nextPage() {
+  String errorMessage = '';
+
+  switch (_currentPage) {
+    case 0: // Página de Email
+      if (_emailController.text.isEmpty) {
+        errorMessage = 'El campo de email está vacío. Por favor, ingresa tu email para continuar.';
+      }
+      break;
+    case 1: // Página de Nombre
+      if (_nameController.text.isEmpty) {
+        errorMessage = 'El campo de nombre está vacío. Por favor, ingresa tu nombre para continuar.';
+      }
+      break;
+    case 2: // Página de Vehículo
+      if (_carPlateController.text.isEmpty || _carModelController.text.isEmpty || _carColorController.text.isEmpty) {
+        errorMessage = 'Por favor, completa todos los campos del vehículo para continuar.';
+      }
+      break;
+    // Agrega más casos si tienes más páginas que necesiten validación
   }
 
-  @override
-  void dispose() {
-    _emailFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    super.dispose();
+  if (errorMessage.isNotEmpty) {
+    // Mostrar mensaje de error
+        cMethods.showTopAlert(context, this, errorMessage);
+
+  } else {
+    // Avanzar a la siguiente página si no hay errores
+    if (_currentPage < 4) {
+      _pageController.animateToPage(
+        _currentPage + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
+    }
+  }
+}
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _pageController.animateToPage(
+        _currentPage - 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            colors: [
-              Colors.orange[900] ?? Colors.orange,
-              Colors.orange[400] ?? Colors.orange,
+      body: Column(
+        children: [
+          // Barra de navegación
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Container(
+                height: 100.h,
+                decoration: const BoxDecoration(color: Colors.white),
+                padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 5.h),
+                    FadeInDown(
+                      delay: const Duration(milliseconds: 900),
+                      duration: const Duration(milliseconds: 1000),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          IconlyBroken.arrow_left,
+                          size: 3.6.h,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FadeInDown(
+                          delay: const Duration(milliseconds: 800),
+                          duration: const Duration(milliseconds: 900),
+                          child: Text(
+                            'Bienvenido!',
+                            style: TextStyle(
+                              fontSize: 23.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 1.h),
+                        FadeInDown(
+                          delay: const Duration(milliseconds: 700),
+                          duration: const Duration(milliseconds: 800),
+                          child: Text(
+                            'Vamos a Registrarte',
+                            style: TextStyle(
+                              fontSize: 21.sp,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        LinearProgressIndicator(
+                          value: (_currentPage + 1) / 5,
+                        ),
+                      ],
+                    ),
+                    // Inserción del PageView
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        onPageChanged: (int page) {
+                          setState(() {
+                            _currentPage = page;
+                          });
+                        },
+                        children: [
+                          _buildEmailInput(),
+                          _buildNameInput(),
+                          _buildCarInput(),
+                          _buildPhotoInput(),
+                          _buildPasswordInput(),
+                        ],
+                      ),
+                    ),
+
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 800),
+                      duration: const Duration(milliseconds: 900),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            '¿Ya tienes Cuenta?',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          TextButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Iniciar Sesión',
+                                style: TextStyle(
+                                  color: Color(0xFF835DF1),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ))
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmailInput() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 1.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 700),
+          duration: const Duration(milliseconds: 800),
+          child: const Text(
+            'Introduce tu Email para Continuar',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 0.8.h),
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+            decoration: BoxDecoration(
+                color: isFocusedEmail ? Colors.white : const Color(0xFFF1F0F5),
+                border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  if (isFocusedEmail)
+                    BoxShadow(
+                        color: const Color(0xFF835DF1).withOpacity(.3),
+                        blurRadius: 4.0,
+                        spreadRadius: 2.0
+                        // Glow Color
+                        )
+                ]),
+            child: TextField(
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: 'Tu Email'),
+              focusNode: focusNodeEmail,
+              controller: _emailController,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        FadeInUp(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      textStyle: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Satoshi'),
+                      backgroundColor: const Color(0xFF835DF1),
+                      foregroundColor: Colors.white,
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16)),
+                  child: FadeInUp(
+                      delay: const Duration(milliseconds: 700),
+                      duration: const Duration(milliseconds: 800),
+                      child: const Text('Continuar')),
+                ),
+              )
             ],
           ),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(height: 80),
-              
-              imageFile == null ?
+      ],
+    );
+  }
+
+  Widget _buildNameInput() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 1.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 700),
+          duration: const Duration(milliseconds: 800),
+          child: const Text(
+            'Introduce tu Nombre y Apellidos',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 0.8.h),
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+            decoration: BoxDecoration(
+                color: isFocusedName ? Colors.white : const Color(0xFFF1F0F5),
+                border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  if (isFocusedName)
+                    BoxShadow(
+                        color: const Color(0xFF835DF1).withOpacity(.3),
+                        blurRadius: 4.0,
+                        spreadRadius: 2.0
+                        // Glow Color
+                        )
+                ]),
+            child: TextField(
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: 'Nombre y Apellidos'),
+              focusNode: focusNodeName,
+              controller: _nameController,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        
+        FadeInUp(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _previousPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi'),
+                        
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Volver'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10), // Espacio entre los botones
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi'),
+                    backgroundColor: const Color(0xFF835DF1),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Continuar'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCarInput() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 1.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 700),
+          duration: const Duration(milliseconds: 800),
+          child: const Text(
+            'Introduce Placa, Modelo y Color de tu Vehículo',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 0.8.h),
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+            decoration: BoxDecoration(
+                color: isFocusedCarPlate ? Colors.white : const Color(0xFFF1F0F5),
+                border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  if (isFocusedCarPlate)
+                    BoxShadow(
+                        color: const Color(0xFF835DF1).withOpacity(.3),
+                        blurRadius: 4.0,
+                        spreadRadius: 2.0
+                        // Glow Color
+                        )
+                ]),
+            child: TextField(
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: 'Placa de Vehículo'),
+              focusNode: focusNodeCarPlate,
+              controller: _carPlateController,
+            ),
+          ),
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 0.8.h),
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+            decoration: BoxDecoration(
+                color: isFocusedCarModel ? Colors.white : const Color(0xFFF1F0F5),
+                border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  if (isFocusedCarModel)
+                    BoxShadow(
+                        color: const Color(0xFF835DF1).withOpacity(.3),
+                        blurRadius: 4.0,
+                        spreadRadius: 2.0
+                        // Glow Color
+                        )
+                ]),
+            child: TextField(
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: 'Modelo de Vehículo'),
+              focusNode: focusNodeCarModel,
+              controller: _carModelController,
+            ),
+          ),
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 0.8.h),
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+            decoration: BoxDecoration(
+                color: isFocusedCarColor ? Colors.white : const Color(0xFFF1F0F5),
+                border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  if (isFocusedCarColor)
+                    BoxShadow(
+                        color: const Color(0xFF835DF1).withOpacity(.3),
+                        blurRadius: 4.0,
+                        spreadRadius: 2.0
+                        // Glow Color
+                        )
+                ]),
+            child: TextField(
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: 'Color de Vehículo'),
+              focusNode: focusNodeCarColor,
+              controller: _carColorController,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        
+        FadeInUp(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _previousPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi'),
+                        
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Volver'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10), // Espacio entre los botones
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi'),
+                    backgroundColor: const Color(0xFF835DF1),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Continuar'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhotoInput() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 5.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 700),
+          duration: const Duration(milliseconds: 800),
+          child: const Text(
+            'Sube una Foto de Perfil',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 2.h,
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 0.8.h),
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: .3.h),
+            decoration: BoxDecoration(
+                color: isFocusedCarColor ? Colors.white : const Color(0xFFF1F0F5),
+                border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  if (isFocusedCarColor)
+                    BoxShadow(
+                        color: const Color(0xFF835DF1).withOpacity(.3),
+                        blurRadius: 4.0,
+                        spreadRadius: 2.0
+                        // Glow Color
+                        )
+                ]),
+                
+            child: 
+            imageFile == null ?
               const CircleAvatar(
                 radius: 86,
-                backgroundImage: AssetImage("assets/images/profileuser.png"),
+                backgroundImage: AssetImage("lib/assets/profileuser.png"),
               ) : Container(
                 width: 180,
                 height: 180,
@@ -238,12 +651,18 @@ class _SignupScreenState extends State<SignupScreen> {
                   )
                 ),
               ),
-              
-              const SizedBox(
-                height: 10,
-              ),
 
-              GestureDetector(
+              
+            
+            
+          ),
+        ),
+
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child:
+          GestureDetector(
                 onTap: ()
                 {
                   chooseImageFromGallery();
@@ -257,560 +676,202 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
 
+        ),
 
-              const SizedBox(height: 50),
-              Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
+                      
+        SizedBox(
+          height: 2.h,
+        ),
+        
+        FadeInUp(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _previousPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi'),
+                        
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Volver'),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      const Text(
-                        'Registro',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: userNameTextEditingController,
-                          focusNode: _nameFocusNode,
-                          keyboardType: TextInputType.text,
-                          style: TextStyle(
-                            color: _nameFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Nombre',
-                            labelStyle: TextStyle(
-                              color: _nameFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: userLastNameTextEditingController,
-                          focusNode: _lastNameFocusNode,
-                          keyboardType: TextInputType.text,
-                          style: TextStyle(
-                            color: _lastNameFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Apellidos',
-                            labelStyle: TextStyle(
-                              color: _lastNameFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: emailTextEditingController,
-                          focusNode: _emailFocusNode,
-                          keyboardType: TextInputType.emailAddress,
-                          style: TextStyle(
-                            color: _emailFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Correo Electrónico',
-                            labelStyle: TextStyle(
-                              color: _emailFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400, // Establece el ancho máximo a 400 píxeles
-                        child: IntlPhoneField(
-                          controller: userPhoneTextEditingController,
-                          decoration: InputDecoration(
-                            labelText: 'Número de Teléfono',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[900]!,
-                              ),
-                            ),
-                          ),
-                          initialCountryCode: 'PE',
-                          onChanged: (phone) {
-                            //print(phone.completeNumber);
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: vehicleModelTextEditingController,
-                          focusNode: _vehicleModelFocusNode,
-                          keyboardType: TextInputType.text,
-                          style: TextStyle(
-                            color: _vehicleModelFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Modelo de Vehículo',
-                            labelStyle: TextStyle(
-                              color: _vehicleModelFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: vehicleColorTextEditingController,
-                          focusNode: _vehicleColorFocusNode,
-                          keyboardType: TextInputType.text,
-                          style: TextStyle(
-                            color: _vehicleColorFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Color de Vehículo',
-                            labelStyle: TextStyle(
-                              color: _vehicleColorFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: vehicleNumberTextEditingController,
-                          focusNode: _vehicleNumberFocusNode,
-                          keyboardType: TextInputType.text,
-                          style: TextStyle(
-                            color: _vehicleNumberFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Número de Placa',
-                            labelStyle: TextStyle(
-                              color: _vehicleNumberFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: passwordTextEditingController,
-                          focusNode: _passwordFocusNode,
-                          obscureText: _obscureText,
-                          style: TextStyle(
-                            color: _passwordFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            labelStyle: TextStyle(
-                              color: _passwordFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: _passwordFocusNode.hasFocus
-                                    ? Colors.orange[900]
-                                    : Colors.black,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: TextField(
-                          controller: _confirmPasswordController,
-                          focusNode: _confirmPasswordFocusNode,
-                          obscureText: _obscureText,
-                          style: TextStyle(
-                            color: _confirmPasswordFocusNode.hasFocus
-                                ? Colors.orange[900]
-                                : Colors.black,
-                          ), // Texto cambia según el foco
-                          decoration: InputDecoration(
-                            labelText: 'Repetir Contraseña',
-                            labelStyle: TextStyle(
-                              color: _confirmPasswordFocusNode.hasFocus
-                                  ? Colors.orange[900]
-                                  : Colors.black,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: BorderSide(
-                                color: Colors.orange[
-                                    900]!, // Color del borde cuando está enfocado
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                              borderSide: const BorderSide(
-                                color: Colors
-                                    .black, // Color del borde cuando no está enfocado
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: _confirmPasswordFocusNode.hasFocus
-                                    ? Colors.orange[900]
-                                    : Colors.black,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Checkbox(
-                            value:
-                                _termsAccepted, // Esto debe ser una variable booleana en tu clase State
-                            onChanged: (bool? value) {
-                              setState(() {
-                                _termsAccepted = value ?? false;
-                              });
-                            },
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              // Navega a una pantalla o muestra un diálogo con los términos y condiciones
-                            },
-                            child: Text(
-                              "Aceptar términos y condiciones",
-                              style: TextStyle(
-                                color: Colors.orange[900],
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: 400,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Acción al presionar el botón de Ingresar
-                            checkIfNetworkIsAvailable();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 50, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            backgroundColor: Colors.orange[900],
-                          ),
-                          child: const Text(
-                            'Registrarse',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Añadir un separador con "OR"
-                      Row(
-                        children: <Widget>[
-                          const Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: Colors.grey,
-                              indent: 30,
-                              endIndent: 10,
-                            ),
-                          ),
-                          Text(
-                            "OR",
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: Colors.grey,
-                              indent: 10,
-                              endIndent: 30,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Botones de Google y Apple
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Acción al presionar el botón de Google
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 30, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              backgroundColor:
-                                  const Color.fromARGB(255, 16, 103, 255),
-                              side: const BorderSide(
-                                  color: Color.fromARGB(255, 15, 153, 233)),
-                              minimumSize: const Size(190, 50),
-                            ),
-                            icon: Image.asset(
-                              'lib/assets/google.png',
-                              width: 20,
-                              height: 20,
-                            ),
-                            label: const Text(
-                              'Google',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 252, 251, 250)),
-                            ),
-                          ),
-                          const SizedBox(width: 20),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Acción al presionar el botón de Apple
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 30, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              backgroundColor:
-                                  const Color.fromARGB(255, 15, 14, 14),
-                              side: const BorderSide(
-                                  color: Color.fromARGB(255, 7, 7, 7)),
-                              minimumSize: const Size(190, 50),
-                            ),
-                            icon: const Icon(
-                              Icons.apple,
-                              color: Color.fromARGB(255, 252, 252, 252),
-                            ),
-                            label: const Text(
-                              'Apple',
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 247, 245, 243)),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Texto "Don't have an account?" seguido de un botón "Sign Up"
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "¿Ya tienes una cuenta?",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 16,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (c) => const LoginScreen()));
-                            },
-                            child: Text(
-                              'Ingresa aquí',
-                              style: TextStyle(
-                                color: Colors.orange[900],
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+              ),
+              const SizedBox(width: 10), // Espacio entre los botones
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi'),
+                    backgroundColor: const Color(0xFF835DF1),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Continuar'),
                   ),
                 ),
               ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
+
+  Widget _buildPasswordInput() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(
+          height: 20, // Ajusta la altura según sea necesario
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 700),
+          duration: const Duration(milliseconds: 800),
+          child: const Text(
+            'Introduce tu Contraseña',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 20, // Ajusta la altura según sea necesario
+        ),
+        FadeInDown(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              color: isFocusedPassword ? Colors.white : const Color(0xFFF1F0F5),
+              border: Border.all(width: 1, color: const Color(0xFFD2D2D4)),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                if (isFocusedPassword)
+                  BoxShadow(
+                    color: const Color(0xFF835DF1).withOpacity(.3),
+                    blurRadius: 4.0,
+                    spreadRadius: 2.0,
+                  )
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _passwordController,
+                    focusNode: focusNodePassword,
+                    obscureText: !_isPasswordVisible,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Contraseña',
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 20, // Ajusta la altura según sea necesario
+        ),
+        FadeInUp(
+          delay: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 700),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _previousPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Satoshi',
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Volver'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Satoshi',
+                    ),
+                    backgroundColor: const Color(0xFF835DF1),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 700),
+                    duration: const Duration(milliseconds: 800),
+                    child: const Text('Finalizar'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
 }
+
+
+

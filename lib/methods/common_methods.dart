@@ -10,6 +10,78 @@ import 'package:remisse_arequipa_driver/models/direction_details.dart';
 import 'package:http/http.dart' as http;
 
 class CommonMethods {
+
+void showTopAlert(BuildContext context, TickerProvider tickerProvider, String message) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    final animationController = AnimationController(
+      vsync: tickerProvider, // Usa el TickerProvider pasado
+      duration: const Duration(seconds: 2),
+    );
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 50.0, // Ajusta la posición vertical según sea necesario
+        left: 0,
+        right: 0,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            margin: const EdgeInsets.symmetric(horizontal: 10.0),
+            decoration: BoxDecoration(
+              color: Colors.redAccent,
+              borderRadius: BorderRadius.circular(8.0),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10.0,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  message,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                const SizedBox(height: 8.0),
+                AnimatedBuilder(
+                  animation: animationController,
+                  builder: (context, child) {
+                    return LinearProgressIndicator(
+                      value: 1.0 - animationController.value,
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 80, 26, 22)),
+                      backgroundColor: Colors.white,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Iniciar la animación
+    animationController.forward();
+
+    // Remover el overlay después de que la animación termine
+    animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        overlayEntry.remove();
+        animationController.dispose();
+      }
+    });
+  }
+
+
+
+
   Future<void> checkConnectivity(BuildContext context) async {
     var connectionResult = await Connectivity().checkConnectivity();
     if (connectionResult.isNotEmpty &&
@@ -21,6 +93,8 @@ class CommonMethods {
           context);
     }
   }
+
+  
 
   void displaysnackbar(String messageText, BuildContext context) {
     var snackBar = SnackBar(content: Text(messageText));
