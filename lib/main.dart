@@ -3,8 +3,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
+import 'package:remisse_arequipa_driver/pages/providers/timerWorckdriver.dart';
 import 'authentication/login_screen.dart';
 import 'package:remisse_arequipa_driver/pages/drivermainscreen.dart';
+import 'package:provider/provider.dart';
 
 Future<void> main() async
 {
@@ -37,7 +39,13 @@ class MyApp extends StatelessWidget
   @override
   Widget build(BuildContext context)
   {
-    return MaterialApp(
+    return MultiProvider(
+      providers: [ //envolvims la aplicacion con providers
+        ChangeNotifierProvider(create: (_)=> Timerworckdriver())
+        // aqui se pueden agregar mas providers
+        
+      ],
+      child: MaterialApp(
      theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(
           primarySwatch: Colors.grey,
@@ -48,7 +56,8 @@ class MyApp extends StatelessWidget
         useMaterial3: true,
       ),
       //home: FirebaseAuth.instance.currentUser == null ? LoginScreen() : Dashboard(),
-      home: const DriverMainScreen(),
+      home: const LoginScreen(),
+      ),
     );
   }
 }

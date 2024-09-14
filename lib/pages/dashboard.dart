@@ -1,7 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
+//import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/pages/drivermainscreen.dart';
 import 'package:remisse_arequipa_driver/pages/profile_page.dart';
 import 'package:remisse_arequipa_driver/pages/trips_page.dart';
 
@@ -54,7 +55,7 @@ class _DashboardState extends State<Dashboard> with SingleTickerProviderStateMix
         controller: controller,
         children: const [
           HomePage(),
-          DriverHomePage(),
+          DriverMainScreen(),
           TripsPage(),
           ProfilePage(),
         ],
