@@ -39,7 +39,7 @@ class _PaymentDialogState extends State<PaymentDialog>
             const SizedBox(height: 21,),
 
             const Text(
-              "COLLECT CASH",
+              "Confirmar Pago",
               style: TextStyle(
                 color: Colors.grey,
               ),
@@ -69,7 +69,7 @@ class _PaymentDialogState extends State<PaymentDialog>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                "This is fare amount ( \$ ${widget.fareAmount} ) to be charged from the user.",
+                "Este es la cantidad S/. (${widget.fareAmount} ) que se le cobrara al cliente.",
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.grey
@@ -87,13 +87,13 @@ class _PaymentDialogState extends State<PaymentDialog>
 
                 cMethods.turnOnLocationUpdatesForHomePage();
 
-                Restart.restartApp();
+                //Restart.restartApp();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
               ),
               child: const Text(
-                "COLLECT CASH",
+                "Confirmar Pago",
               ),
             ),
 
