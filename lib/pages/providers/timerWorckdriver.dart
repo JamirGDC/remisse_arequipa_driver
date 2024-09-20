@@ -4,6 +4,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importa Firebase Authentication.
+import 'package:remisse_arequipa_driver/global.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 
 class Timerworckdriver extends ChangeNotifier {
   // Constantes
@@ -94,6 +98,12 @@ class Timerworckdriver extends ChangeNotifier {
     });
   }
 
+
+
+
+
+
+
   // Inicia el temporizador.
   Future <void> startTimer() async {
     if (_isTimerActive) return;
@@ -146,6 +156,9 @@ Future <void> firstDayTime() async{
     _saveToPreferences();
     notifyListeners();
   }
+
+
+
 
   // Deshabilita el switch temporalmente.
 void disableSwitchTemporarily() {

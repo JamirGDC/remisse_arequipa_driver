@@ -4,13 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/authentication/welcome.dart';
+import 'package:remisse_arequipa_driver/pages/Form/FormChecklist.dart';
+import 'package:remisse_arequipa_driver/pages/Form/FormHomePage.dart';
+import 'package:remisse_arequipa_driver/pages/check_list_page.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
+import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/pages/providers/formprovider.dart';
 import 'package:remisse_arequipa_driver/pages/providers/timerWorckdriver.dart';
 import 'authentication/login_screen.dart';
 import 'package:remisse_arequipa_driver/pages/drivermainscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:remisse_arequipa_driver/widgets/splash_Screen.dart';
+
 
 import 'package:sizer/sizer.dart';
 
@@ -48,6 +54,7 @@ Widget build(BuildContext context) {
     builder: (context, orientation, deviceType) => MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_)=> Timerworckdriver()),
+        ChangeNotifierProvider(create: (_)=> Formprovider()),
       ],
       child: MaterialApp(
         theme: ThemeData(
@@ -58,10 +65,21 @@ Widget build(BuildContext context) {
             secondary: Colors.black,
           ),
           useMaterial3: true,
-        ),
-        home: FirebaseAuth.instance.currentUser == null ? const SignupScreen() : const Dashboard(),
 
-        // home: const LoginScreen(),
+        ),
+        routes: {
+          '/HomePage': (context) => const HomePage(),
+            '/signup': (context) => const SignupScreen(),
+            '/login': (context) => const LoginScreen(),
+            '/dashboard': (context) => const Dashboard(),
+            '/driverHomePage': (context) => const DriverHomePage(),
+            '/formHomePage': (context) => const Formhomepage(),  // Ruta hacia la página del formulario
+            '/formChecklist': (context) => const Formchecklist(), // Ruta hacia la checklist
+            '/driverMainScreen': (context) => const DriverMainScreen(),
+        }  ,
+        //home: FirebaseAuth.instance.currentUser == null ? const SignupScreen() : const Dashboard(),
+
+         home: const Formhomepage(),
       ),
     ),
   );

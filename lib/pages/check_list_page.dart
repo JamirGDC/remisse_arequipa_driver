@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+// animaciones
+import 'package:animate_do/animate_do.dart';
+import 'package:iconly/iconly.dart';
+import 'package:sizer/sizer.dart';
 
 class ChecklistPage extends StatefulWidget {
   @override
@@ -129,12 +133,16 @@ class _ChecklistPageState extends State<ChecklistPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text(
-            'Formulario',
-            style: TextStyle(
-              fontSize: 18.0, // Tamaño de fuente más pequeño
-              fontWeight: FontWeight.bold, // Negrita
+        title: FadeInDown(
+          delay: const Duration(milliseconds: 900),
+          duration: const Duration(milliseconds: 1000),
+          child: const Center(
+            child: Text(
+              'Formulario',
+              style: TextStyle(
+                fontSize: 18.0, // Tamaño de fuente más pequeño
+                fontWeight: FontWeight.bold, // Negrita
+              ),
             ),
           ),
         ),
@@ -143,60 +151,69 @@ class _ChecklistPageState extends State<ChecklistPage> {
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: _questions.map((question) {
-                return Container(
-                  margin: const EdgeInsets.all(8.0),
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color.fromARGB(255, 252, 252, 252)),
-                    borderRadius: BorderRadius.circular(20.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 3,
-                        offset: const Offset(0, 3), // Sombra hacia abajo
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        question['text'],
-                        style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8.0),
-                      Wrap(
-                        spacing: 10.0, // Espacio entre los radio buttons
-                        children: _options.map((option) {
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Radio<String>(
-                                value: option,
-                                groupValue: _responses[question['id']],
-                                activeColor: const Color.fromARGB(255, 205, 87, 24), // Color personalizado
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    _responses[question['id']] = value!;
-                                  });
-                                },
-                              ),
-                              Text(option),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                return FadeInUp(
+                  delay: const Duration(milliseconds: 400),
+                  duration: const Duration(milliseconds: 500),
+                  child: Container(
+                    margin: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: const Color.fromARGB(255, 252, 252, 252)),
+                      borderRadius: BorderRadius.circular(20.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 3,
+                          offset: const Offset(0, 3), // Sombra hacia abajo
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          question['text'],
+                          style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8.0),
+                        Wrap(
+                          spacing: 10.0, // Espacio entre los radio buttons
+                          children: _options.map((option) {
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Radio<String>(
+                                  value: option,
+                                  groupValue: _responses[question['id']],
+                                  activeColor: const Color.fromARGB(255, 205, 87, 24), // Color personalizado
+                                  onChanged: (String? value) {
+                                    setState(() {
+                                      _responses[question['id']] = value!;
+                                    });
+                                  },
+                                ),
+                                Text(option),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _isSaving ? null : _saveChecklist, // Desactiva el botón si está guardando
-        // ignore: prefer_const_constructors
-        child: _isSaving ? CircularProgressIndicator() : const Icon(Icons.save),
+      floatingActionButton: FadeInUp(
+        delay: const Duration(milliseconds: 600),
+        duration: const Duration(milliseconds: 700),
+        child: FloatingActionButton(
+          onPressed: _isSaving ? null : _saveChecklist, // Desactiva el botón si está guardando
+          child: _isSaving
+              ? const CircularProgressIndicator()
+              : const Icon(Icons.save),
+        ),
       ),
     );
   }
