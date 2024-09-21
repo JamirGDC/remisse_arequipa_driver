@@ -5,19 +5,19 @@ import 'package:remisse_arequipa_driver/pages/providers/formprovider.dart';
 
 import 'package:sizer/sizer.dart'; // Usar sizer para adaptabilidad de tamaños
 
-class Formhomepage extends StatefulWidget {
-  const Formhomepage({super.key});
+class FormHomePage extends StatefulWidget {
+  const FormHomePage({super.key});
 
   @override
-  _FormhomepageState createState() => _FormhomepageState();
+  FormHomePageState createState() => FormHomePageState();
 }
 
-class _FormhomepageState extends State<Formhomepage> {
+class FormHomePageState extends State<FormHomePage> {
   
   @override
   Widget build(BuildContext context) {
 //instancia de mi provider y la clase que cree
-    final Formprovider1 = Provider.of<Formprovider>(context);
+    final formProviderOne = Provider.of<Formprovider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -30,7 +30,7 @@ class _FormhomepageState extends State<Formhomepage> {
               SizedBox(height: 4.h), // Espacio superior
               Center(
                 child: Text(
-                  Formprovider1.getGreeting(), 
+                  formProviderOne.getGreeting(), 
                   style: TextStyle(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.bold,
@@ -87,7 +87,7 @@ class _FormhomepageState extends State<Formhomepage> {
                         width: 80.w, // Define el ancho del botón
                         child: ElevatedButton(
                           onPressed: () {
-                            Formprovider1.healthFormButton(context); //llamo al metodo
+                            formProviderOne.healthFormButton(context); //llamo al metodo
                           },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 2.h),
@@ -114,7 +114,7 @@ class _FormhomepageState extends State<Formhomepage> {
                         width: 80.w, // Mismo ancho que el primer botón
                         child: ElevatedButton(
                           onPressed: () {
-                           Formprovider1.mechanicalFormButton(context); //llamo al metodo
+                           formProviderOne.mechanicalFormButton(context); //llamo al metodo
                           },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 2.h),
@@ -141,7 +141,7 @@ class _FormhomepageState extends State<Formhomepage> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    Formprovider1.continueButton(context); //llamo al metodo
+                    formProviderOne.continueButton(context); //llamo al metodo
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.5.h),
