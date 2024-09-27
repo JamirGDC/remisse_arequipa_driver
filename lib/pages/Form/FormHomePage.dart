@@ -13,7 +13,6 @@ class Formhomepage extends StatefulWidget {
 }
 
 class _FormhomepageState extends State<Formhomepage> {
-  
   @override
   Widget build(BuildContext context) {
 //instancia de mi provider y la clase que cree
@@ -30,7 +29,7 @@ class _FormhomepageState extends State<Formhomepage> {
               SizedBox(height: 4.h), // Espacio superior
               Center(
                 child: Text(
-                  Formprovider1.getGreeting(), 
+                  Formprovider1.getGreeting(),
                   style: TextStyle(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.bold,
@@ -43,7 +42,10 @@ class _FormhomepageState extends State<Formhomepage> {
                 child: Container(
                   padding: EdgeInsets.all(3.h),
                   decoration: BoxDecoration(
-                    color: Colors.yellow.shade100,
+                    color: (Formprovider1.isEnable ?? false)
+                        ? Colors.green.shade100
+                        : Colors.yellow
+                            .shade100, // Cambia el color basado en isEnable
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
@@ -58,13 +60,17 @@ class _FormhomepageState extends State<Formhomepage> {
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
-                        color: Colors.yellow[800],
+                        color: (Formprovider1.isEnable ?? false)
+                            ? Colors.green[800]
+                            : Colors.yellow[800],
                         size: 7.w,
                       ),
                       SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
-                          'Fecha del último día que rellenó el formulario: 16/09/2024',
+                          (Formprovider1.isEnable ?? false)
+                              ? 'Formulario del día completo: ${Formprovider1.lastChecklistDate}'
+                              : 'Fecha del último día que rellenó el formulario: ${Formprovider1.lastChecklistDate ?? 'No disponible'}',
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w500,
@@ -79,19 +85,26 @@ class _FormhomepageState extends State<Formhomepage> {
               FadeInUp(
                 duration: const Duration(milliseconds: 700),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center, // Centra los botones verticalmente
+                  mainAxisAlignment: MainAxisAlignment
+                      .center, // Centra los botones verticalmente
                   children: [
                     // Primer botón: Rellenar Formulario de Salud
                     Center(
                       child: SizedBox(
                         width: 80.w, // Define el ancho del botón
                         child: ElevatedButton(
-                          onPressed: () {
-                            Formprovider1.healthFormButton(context); //llamo al metodo
-                          },
+                          onPressed: (Formprovider1.isEnable ?? true)
+                              ? null
+                              : () {
+                                  Formprovider1.healthFormButton(
+                                      context); //llamo al metodo
+                                },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 2.h),
-                            backgroundColor: const Color(0xFF835DF1),
+                            backgroundColor: (Formprovider1.isEnable ?? true)
+                                ? Colors
+                                    .grey // Color original
+                                : const Color(0xFF835DF1), // Color cuando está deshabilitado
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -113,12 +126,18 @@ class _FormhomepageState extends State<Formhomepage> {
                       child: SizedBox(
                         width: 80.w, // Mismo ancho que el primer botón
                         child: ElevatedButton(
-                          onPressed: () {
-                           Formprovider1.mechanicalFormButton(context); //llamo al metodo
+                          onPressed: (Formprovider1.isEnable ?? true)
+                              ? null
+                              :  () {
+                            Formprovider1.mechanicalFormButton(
+                                context); //llamo al metodo
                           },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 2.h),
-                            backgroundColor: const Color(0xFF835DF1),
+                            backgroundColor: (Formprovider1.isEnable ?? true)
+                                ? Colors
+                                    .grey // Color original
+                                : const Color(0xFF835DF1), // Color cuando está deshabilitado
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -137,15 +156,23 @@ class _FormhomepageState extends State<Formhomepage> {
                   ],
                 ),
               ),
-              SizedBox(height: 12.h), // Espacio adicional antes del botón "Continuar"
+              SizedBox(
+                  height:
+                      12.h), // Espacio adicional antes del botón "Continuar"
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Formprovider1.continueButton(context); //llamo al metodo
-                  },
+                  onPressed: (Formprovider1.isEnable ?? false)
+                      ? () {
+                          Formprovider1.continueButton(
+                              context); //llamo al metodo
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.5.h),
-                    backgroundColor: const Color(0xFF4CAF50),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.5.h),
+                    backgroundColor: (Formprovider1.isEnable ?? false)
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey, // Cambia el color según el estado
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -167,4 +194,3 @@ class _FormhomepageState extends State<Formhomepage> {
     );
   }
 }
-

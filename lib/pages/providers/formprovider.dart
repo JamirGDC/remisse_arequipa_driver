@@ -12,11 +12,13 @@ class Formprovider extends ChangeNotifier {
   List<Map<String, dynamic>> questions = [];
   final List<String> options = ['Bien', 'Mal', 'N/A', 'Sí', 'No']; // Opciones del checklist
   bool isSaving = false; // Variable para manejar el estado del botón
- 
+ String? lastChecklistDate; // Fecha del último checklist guardado
+ bool? isEnable = false;
   // Constructor
   Formprovider() {
     // Inicializar variables
     _getUserName();
+    fetchLastChecklistDate();
     _loadQuestions();
   }
 
@@ -83,6 +85,7 @@ void healthFormButton(BuildContext context) {
     try {
       final DatabaseEvent event = await questionsRef.once();
       final DataSnapshot dataSnapshot = event.snapshot;
+
       List<Map<String, dynamic>> tempQuestions = [];
 
       for (var data in dataSnapshot.children) {
@@ -153,9 +156,63 @@ void healthFormButton(BuildContext context) {
       return 'Error al guardar el cuestionario: $error';
     } finally {
       isSaving = false;
+      getLastChecklistDate(); // Actualiza la fecha del último checklist
+      fetchLastChecklistDate(); // Actualiza la fecha del último checklist
       notifyListeners();
     }
   }
+
+ //Obtener la fecha  del ultimo cheklist
+ Future<String> getLastChecklistDate() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    return 'Usuario no autenticado';
+  }
+
+  try {
+    // Referencia al checklist del usuario
+    DatabaseReference checklistRef = FirebaseDatabase.instance.ref().child('drivers/${user.uid}/checklists');
+
+    // Ordenamos por fecha y limitamos a uno (el último)
+    final Query lastChecklistQuery = checklistRef.orderByChild('createdAt').limitToLast(1);
+
+    DatabaseEvent event = await lastChecklistQuery.once();
+    DataSnapshot snapshot = event.snapshot;
+
+    if (snapshot.exists && snapshot.children.isNotEmpty) {
+      // Obtenemos el primer (y único) elemento del snapshot
+      DataSnapshot lastChecklist = snapshot.children.first;
+
+      // Extraemos la fecha de creación del checklist
+      String lastDate = lastChecklist.child('createdAt').value as String;
+
+      return lastDate;
+    } else {
+      return 'No se encontró ningún checklist guardado';
+    }
+  } catch (e) {
+    return 'Error al obtener la última fecha del checklist: $e';
+  }
+  }
+
+Future<void> fetchLastChecklistDate() async {
+  String? isoDate = await getLastChecklistDate(); 
+    // Convertir la fecha ISO en un objeto DateTime
+  DateTime parsedDate = DateTime.parse(isoDate);
+
+  // Formatear la fecha en día/mes/año
+  lastChecklistDate = '${parsedDate.day}/${parsedDate.month}/${parsedDate.year}';
+// Verifica si la fecha coincide con hoy
+DateTime today = DateTime.now();
+    isEnable = parsedDate.year == today.year && 
+                    parsedDate.month == today.month && 
+                    parsedDate.day == today.day;
+    print('Fecha del último checklist: $lastChecklistDate');
+     print('Fecha actual: ${today.day}/${today.month}/${today.year}');
+    print('Formulario lleno hoy: $isEnable');
+  notifyListeners(); // Notificar a los listeners que la UI debe actualizarse
+}
 
 // Obtener la respuesta seleccionada para una pregunta específica
 String? getResponse(String questionId) {
