@@ -42,10 +42,10 @@ class _FormhomepageState extends State<Formhomepage> {
                 child: Container(
                   padding: EdgeInsets.all(3.h),
                   decoration: BoxDecoration(
-                    color: (Formprovider1.isEnable ?? false)
-                        ? Colors.green.shade100
-                        : Colors.yellow
-                            .shade100, // Cambia el color basado en isEnable
+                    color: (Formprovider1.isBothFormsComplete)
+                        ? Colors.green
+                            .shade100 // Verde si ambos formularios están completos
+                        : Colors.yellow.shade100, // Amarillo si no
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
@@ -60,17 +60,18 @@ class _FormhomepageState extends State<Formhomepage> {
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
-                        color: (Formprovider1.isEnable ?? false)
-                            ? Colors.green[800]
-                            : Colors.yellow[800],
+                        color: (Formprovider1.isBothFormsComplete)
+                            ? Colors.green[
+                                800] // Verde si ambos formularios están completos
+                            : Colors.yellow[800], // Amarillo si no
                         size: 7.w,
                       ),
                       SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
-                          (Formprovider1.isEnable ?? false)
-                              ? 'Formulario del día completo: ${Formprovider1.lastChecklistDate}'
-                              : 'Fecha del último día que rellenó el formulario: ${Formprovider1.lastChecklistDate ?? 'No disponible'}',
+                          (Formprovider1.isBothFormsComplete)
+                              ? 'Ambos formularios están completos: Salud: ${Formprovider1.lastHealthChecklistDate}|  Mecanica: ${Formprovider1.lastMechanicalChecklistDate}'
+                              : 'Formulario de Salud: ${Formprovider1.lastHealthChecklistDate ?? 'No disponible'} | Formulario de Mecánica: ${Formprovider1.lastMechanicalChecklistDate ?? 'No disponible'}',
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w500,
@@ -93,7 +94,7 @@ class _FormhomepageState extends State<Formhomepage> {
                       child: SizedBox(
                         width: 80.w, // Define el ancho del botón
                         child: ElevatedButton(
-                          onPressed: (Formprovider1.isEnable ?? true)
+                          onPressed: (Formprovider1.isEnableHealth ?? true)
                               ? null
                               : () {
                                   Formprovider1.healthFormButton(
@@ -101,10 +102,10 @@ class _FormhomepageState extends State<Formhomepage> {
                                 },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 2.h),
-                            backgroundColor: (Formprovider1.isEnable ?? true)
-                                ? Colors
-                                    .grey // Color original
-                                : const Color(0xFF835DF1), // Color cuando está deshabilitado
+                            backgroundColor: (Formprovider1.isEnableHealth ??
+                                    true)
+                                ? Colors.grey // Color cuando está deshabilitado
+                                : const Color(0xFF835DF1), // Color original
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -126,18 +127,19 @@ class _FormhomepageState extends State<Formhomepage> {
                       child: SizedBox(
                         width: 80.w, // Mismo ancho que el primer botón
                         child: ElevatedButton(
-                          onPressed: (Formprovider1.isEnable ?? true)
-                              ? null
-                              :  () {
-                            Formprovider1.mechanicalFormButton(
-                                context); //llamo al metodo
-                          },
+                          onPressed: (Formprovider1.isEnableMechanical ?? true)
+                              ? null // Deshabilitado si ya fue rellenado hoy
+                              : () {
+                                  Formprovider1.mechanicalFormButton(
+                                      context); //llamo al metodo
+                                },
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 2.h),
-                            backgroundColor: (Formprovider1.isEnable ?? true)
-                                ? Colors
-                                    .grey // Color original
-                                : const Color(0xFF835DF1), // Color cuando está deshabilitado
+                            backgroundColor: (Formprovider1
+                                        .isEnableMechanical ??
+                                    true)
+                                ? Colors.grey // Color cuando está deshabilitado
+                                : const Color(0xFF835DF1), // Color original
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -161,7 +163,7 @@ class _FormhomepageState extends State<Formhomepage> {
                       12.h), // Espacio adicional antes del botón "Continuar"
               Center(
                 child: ElevatedButton(
-                  onPressed: (Formprovider1.isEnable ?? false)
+                  onPressed: (Formprovider1.isBothFormsComplete)
                       ? () {
                           Formprovider1.continueButton(
                               context); //llamo al metodo
@@ -170,7 +172,7 @@ class _FormhomepageState extends State<Formhomepage> {
                   style: ElevatedButton.styleFrom(
                     padding:
                         EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.5.h),
-                    backgroundColor: (Formprovider1.isEnable ?? false)
+                    backgroundColor: Formprovider1.isBothFormsComplete
                         ? const Color(0xFF4CAF50)
                         : Colors.grey, // Cambia el color según el estado
                     shape: RoundedRectangleBorder(

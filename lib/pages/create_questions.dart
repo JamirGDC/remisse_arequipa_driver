@@ -11,16 +11,16 @@ class _CreateQuestionsState extends State<CreateQuestions> {
   final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref().child('questions');
   bool _isActive = true; // Estado activo predeterminado
 
-  // Función para agregar una nueva pregunta a la base de datos
-  void _addQuestion() {
+  // Función para agregar una nueva pregunta a la base de datos en el subnodo especificado
+  void _addQuestion(String subNode) {
     String questionText = _questionController.text.trim();
 
     if (questionText.isNotEmpty) {
       // Crea una nueva clave única para la pregunta
-      String? key = _databaseReference.push().key;
+      String? key = _databaseReference.child(subNode).push().key;
 
-      // Guarda la pregunta en la base de datos
-      _databaseReference.child(key!).set({
+      // Guarda la pregunta en el subnodo correspondiente
+      _databaseReference.child(subNode).child(key!).set({
         'text': questionText,
         'createdAt': DateTime.now().toIso8601String(),
         'isActive': _isActive, // Añade el estado de activo
@@ -77,11 +77,15 @@ class _CreateQuestionsState extends State<CreateQuestions> {
                 ),
               ],
             ),
-            // ignore: prefer_const_constructors
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _addQuestion,
-              child: const Text('Guardar Pregunta'),
+              onPressed: () => _addQuestion('questions_health'), // Guardar en questions_health
+              child: const Text('Guardar Pregunta Salud'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _addQuestion('questions_machines'), // Guardar en questions_machines
+              child: const Text('Guardar Pregunta Máquina'),
             ),
           ],
         ),
