@@ -77,7 +77,7 @@ Widget build(BuildContext context) {
         }  ,
         //home: FirebaseAuth.instance.currentUser == null ? const SignupScreen() : const Dashboard(),
 
-         home: const Dashboard(),
+         home: const AuthWrapper(),
       ),
     ),
   );

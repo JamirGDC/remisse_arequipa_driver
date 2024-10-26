@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:remisse_arequipa_driver/authentication/login_screen.dart';
+import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:sizer/sizer.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -124,7 +125,13 @@ class _WelcomePageState extends State<WelcomePage> {
                           ),
                         ),
                         TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SignupScreen(),
+                                  ));
+                            },
                             child: const Text(
                               'Registro',
                               style: TextStyle(

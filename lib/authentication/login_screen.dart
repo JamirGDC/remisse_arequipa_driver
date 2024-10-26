@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
+import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
@@ -360,7 +361,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SignupScreen(),
+                                  ));
+                            },
                             child: const Text(
                               'Registrate',
                               style: TextStyle(
