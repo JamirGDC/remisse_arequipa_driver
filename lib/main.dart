@@ -6,6 +6,8 @@ import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/authentication/welcome.dart';
 import 'package:remisse_arequipa_driver/pages/Form/FormChecklist.dart';
 import 'package:remisse_arequipa_driver/pages/Form/form_home_page.dart';
+import 'package:remisse_arequipa_driver/pages/check_list_page.dart';
+import 'package:remisse_arequipa_driver/pages/create_questions.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
 import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
@@ -74,6 +76,7 @@ Widget build(BuildContext context) {
             '/formHomePage': (context) => const FormHomePage(),  // Ruta hacia la página del formulario
             '/formChecklist': (context) => const Formchecklist(), // Ruta hacia la checklist
             '/driverMainScreen': (context) => const DriverMainScreen(),
+            '/createquestions': (context) =>   CreateQuestions(),
         }  ,
         //home: FirebaseAuth.instance.currentUser == null ? const SignupScreen() : const Dashboard(),
 
