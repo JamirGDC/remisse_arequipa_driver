@@ -3,10 +3,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // animaciones
 import 'package:animate_do/animate_do.dart';
-import 'package:iconly/iconly.dart';
-import 'package:sizer/sizer.dart';
+
 
 class ChecklistPage extends StatefulWidget {
+  const ChecklistPage({super.key});
+
   @override
   _ChecklistPageState createState() => _ChecklistPageState();
 }
@@ -29,7 +30,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
       final dataSnapshot = event.snapshot;
       List<Map<String, dynamic>> tempQuestions = [];
 
-      dataSnapshot.children.forEach((data) {
+      for (var data in dataSnapshot.children) {
         final String? key = data.key;
         final questionData = Map<String, dynamic>.from(data.value as Map);
 
@@ -41,7 +42,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
           // Inicializa la respuesta como "N/A"
           _responses[key] = 'N/A';
         }
-      });
+      }
 
       setState(() {
         _questions = tempQuestions;

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class CreateQuestions extends StatefulWidget {
+  const CreateQuestions({super.key});
+
   @override
   _CreateQuestionsState createState() => _CreateQuestionsState();
 }

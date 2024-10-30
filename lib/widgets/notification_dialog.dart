@@ -62,7 +62,7 @@ class _NotificationDialogState extends State<NotificationDialog>
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (BuildContext context) => LoadingDialog(messageText: 'please wait...',),
+      builder: (BuildContext context) => const LoadingDialog(messageText: 'please wait...',),
     );
 
     DatabaseReference driverTripStatusRef = FirebaseDatabase.instance.ref()

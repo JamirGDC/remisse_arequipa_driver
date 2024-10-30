@@ -124,8 +124,8 @@ class _AssignRoutePageState extends State<AssignRoutePage> {
       Map<String, dynamic> tripData = {
         "driverID": selectedDriverId,
         "clientID": selectedClientId,
-        "pickUpAddress": clientHomePosition!.latitude.toString() + ", " + clientHomePosition!.longitude.toString(),
-        "dropOffAddress": clientWorkPosition!.latitude.toString() + ", " + clientWorkPosition!.longitude.toString(),
+        "pickUpAddress": "${clientHomePosition!.latitude}, ${clientHomePosition!.longitude}",
+        "dropOffAddress": "${clientWorkPosition!.latitude}, ${clientWorkPosition!.longitude}",
         "status": "pending",
       };
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
-import 'package:restart_app/restart_app.dart';
 
 class PaymentDialog extends StatefulWidget
 {

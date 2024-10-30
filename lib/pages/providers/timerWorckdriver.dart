@@ -18,7 +18,7 @@ class Timerworckdriver extends ChangeNotifier {
   String _driverName = '';
   bool _isTimerActive = false;
   bool _switchEnabled = true;
-  ValueNotifier<bool> _buttonEnabled = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> _buttonEnabled = ValueNotifier<bool>(true);
   int _secondselapsed = 0;
   Timer? _timer;
   DateTime? _startTime;
@@ -257,16 +257,16 @@ _firstEndTime = DateTime.now();
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmación'),
-          content: Text('¿Estás seguro de que deseas finalizar el día laboral?'),
+          title: const Text('Confirmación'),
+          content: const Text('¿Estás seguro de que deseas finalizar el día laboral?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Aceptar'),
+              child: const Text('Aceptar'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
           ],
         );

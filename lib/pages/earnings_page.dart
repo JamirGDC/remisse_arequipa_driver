@@ -68,7 +68,7 @@ class _EarningsPageState extends State<EarningsPage>
                     ),
 
                     Text(
-                      "\$ " + driverEarnings,
+                      "\$ $driverEarnings",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 30,

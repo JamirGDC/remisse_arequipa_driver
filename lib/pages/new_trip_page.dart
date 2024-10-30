@@ -31,9 +31,9 @@ class _NewTripPageState extends State<NewTripPage>
   double googleMapPaddingFromBottom = 0;
   List<LatLng> coordinatesPolylineLatLngList = [];
   PolylinePoints polylinePoints = PolylinePoints();
-  Set<Marker> markersSet = Set<Marker>();
-  Set<Circle> circlesSet = Set<Circle>();
-  Set<Polyline> polyLinesSet = Set<Polyline>();
+  Set<Marker> markersSet = <Marker>{};
+  Set<Circle> circlesSet = <Circle>{};
+  Set<Polyline> polyLinesSet = <Polyline>{};
   BitmapDescriptor? carMarkerIcon;
   bool directionRequested = false;
   String statusOfTrip = "accepted";
@@ -46,7 +46,7 @@ class _NewTripPageState extends State<NewTripPage>
   {
     if(carMarkerIcon == null)
     {
-      ImageConfiguration configuration = createLocalImageConfiguration(context, size: Size(2, 2));
+      ImageConfiguration configuration = createLocalImageConfiguration(context, size: const Size(2, 2));
 
       BitmapDescriptor.fromAssetImage(configuration, "assets/images/tracking.png")
           .then((valueIcon)
@@ -61,7 +61,7 @@ class _NewTripPageState extends State<NewTripPage>
     showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (BuildContext context) => LoadingDialog(messageText: 'Please wait...',)
+        builder: (BuildContext context) => const LoadingDialog(messageText: 'Please wait...',)
     );
 
     var tripDetailsInfo = await CommonMethods.getDirectionDetailsFromAPI(
@@ -78,10 +78,9 @@ class _NewTripPageState extends State<NewTripPage>
 
     if(latLngPoints.isNotEmpty)
     {
-      latLngPoints.forEach((PointLatLng pointLatLng)
-      {
+      for (var pointLatLng in latLngPoints) {
         coordinatesPolylineLatLngList.add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
-      });
+      }
     }
 
     //draw polyline
@@ -182,7 +181,7 @@ class _NewTripPageState extends State<NewTripPage>
 
   getLiveLocationUpdatesOfDriver()
   {
-    LatLng lastPositionLatLng = LatLng(0, 0);
+    LatLng lastPositionLatLng = const LatLng(0, 0);
 
     positionStreamNewTripPage = Geolocator.getPositionStream().listen((Position positionDriver)
     {
@@ -265,7 +264,7 @@ class _NewTripPageState extends State<NewTripPage>
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (BuildContext context) => LoadingDialog(messageText: 'Please wait...',),
+      builder: (BuildContext context) => const LoadingDialog(messageText: 'Please wait...',),
     );
 
     var driverCurrentLocationLatLng = LatLng(driverCurrentPosition!.latitude, driverCurrentPosition!.longitude);
@@ -339,7 +338,7 @@ class _NewTripPageState extends State<NewTripPage>
       "driverName": driverName,
       "driverPhone": driverPhone,
       "driverPhoto": driverPhoto,
-      "carDetails": carColor + " - " + carModel + " - " + carNumber,
+      "carDetails": "$carColor - $carModel - $carNumber",
     };
 
     Map<String, dynamic> driverCurrentLocation =
@@ -437,7 +436,7 @@ class _NewTripPageState extends State<NewTripPage>
                     //trip duration
                     Center(
                       child: Text(
-                        durationText + " - " + distanceText,
+                        "$durationText - $distanceText",
                         style: const TextStyle(
                           color: Colors.green,
                           fontSize: 15,
@@ -561,7 +560,7 @@ class _NewTripPageState extends State<NewTripPage>
                             showDialog(
                                 barrierDismissible: false,
                                 context: context,
-                                builder: (BuildContext context) => LoadingDialog(messageText: 'Please wait...',)
+                                builder: (BuildContext context) => const LoadingDialog(messageText: 'Please wait...',)
                             );
 
                             await obtainDirectionAndDrawRoute(
