@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importa Firebase Authentication.
-import 'package:remisse_arequipa_driver/global.dart';
-import 'package:flutter_geofire/flutter_geofire.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 
 class Timerworckdriver extends ChangeNotifier {
   // Constantes
