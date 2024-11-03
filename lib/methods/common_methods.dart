@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,13 +14,13 @@ void showTopAlert(BuildContext context, TickerProvider tickerProvider, String me
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
     final animationController = AnimationController(
-      vsync: tickerProvider, // Usa el TickerProvider pasado
+      vsync: tickerProvider,
       duration: const Duration(seconds: 2),
     );
 
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 50.0, // Ajusta la posición vertical según sea necesario
+        top: 50.0,
         left: 0,
         right: 0,
         child: Material(
@@ -67,10 +66,8 @@ void showTopAlert(BuildContext context, TickerProvider tickerProvider, String me
 
     overlay.insert(overlayEntry);
 
-    // Iniciar la animación
     animationController.forward();
 
-    // Remover el overlay después de que la animación termine
     animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         overlayEntry.remove();

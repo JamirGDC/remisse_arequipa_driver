@@ -15,9 +15,9 @@ import '../widgets/loading_dialog.dart';
 
 class NewTripPage extends StatefulWidget
 {
-  TripDetails? newTripDetailsInfo;
+  final TripDetails? newTripDetailsInfo;
 
-  NewTripPage({super.key, this.newTripDetailsInfo,});
+  const NewTripPage({super.key, this.newTripDetailsInfo,});
 
   @override
   State<NewTripPage> createState() => _NewTripPageState();
@@ -48,7 +48,7 @@ class _NewTripPageState extends State<NewTripPage>
     {
       ImageConfiguration configuration = createLocalImageConfiguration(context, size: const Size(2, 2));
 
-      BitmapDescriptor.fromAssetImage(configuration, "assets/images/tracking.png")
+      BitmapDescriptor.asset(configuration, "assets/images/tracking.png")
           .then((valueIcon)
       {
         carMarkerIcon = valueIcon;
@@ -56,7 +56,7 @@ class _NewTripPageState extends State<NewTripPage>
     }
   }
 
-  obtainDirectionAndDrawRoute(sourceLocationLatLng, destinationLocationLatLng) async
+  Future<void> obtainDirectionAndDrawRoute(sourceLocationLatLng, destinationLocationLatLng) async
   {
     showDialog(
         barrierDismissible: false,
@@ -69,6 +69,7 @@ class _NewTripPageState extends State<NewTripPage>
         destinationLocationLatLng
     );
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     PolylinePoints pointsPolyline = PolylinePoints();
@@ -181,7 +182,6 @@ class _NewTripPageState extends State<NewTripPage>
 
   getLiveLocationUpdatesOfDriver()
   {
-    LatLng lastPositionLatLng = const LatLng(0, 0);
 
     positionStreamNewTripPage = Geolocator.getPositionStream().listen((Position positionDriver)
     {
@@ -204,7 +204,6 @@ class _NewTripPageState extends State<NewTripPage>
         markersSet.add(carMarker);
       });
 
-      lastPositionLatLng = driverCurrentPositionLatLng;
 
       //update Trip Details Information
       updateTripDetailsInformation();
@@ -259,7 +258,7 @@ class _NewTripPageState extends State<NewTripPage>
     }
   }
 
-  endTripNow() async
+  Future<void> endTripNow() async
   {
     showDialog(
       barrierDismissible: false,
@@ -274,6 +273,7 @@ class _NewTripPageState extends State<NewTripPage>
         driverCurrentLocationLatLng, //destination
     );
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     String fareAmount = (cMethods.calculateFareAmount(directionDetailsEndTripInfo!)).toString();
@@ -360,7 +360,6 @@ class _NewTripPageState extends State<NewTripPage>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     saveDriverDataToTripInfo();
@@ -567,7 +566,7 @@ class _NewTripPageState extends State<NewTripPage>
                               widget.newTripDetailsInfo!.pickUpLatLng,
                               widget.newTripDetailsInfo!.dropOffLatLng,
                             );
-
+                            if (!mounted) return;
                             Navigator.pop(context);
                           }
                           //start trip button

@@ -6,10 +6,10 @@ class DriverMainScreen extends StatefulWidget {
   const DriverMainScreen({super.key});
 
   @override
-  _DriverMainScreenState createState() => _DriverMainScreenState();
+  DriverMainScreenState createState() => DriverMainScreenState();
 }
 
-class _DriverMainScreenState extends State<DriverMainScreen> {
+class DriverMainScreenState extends State<DriverMainScreen> {
   @override
   Widget build(BuildContext context) {
     // Obtén la instancia de Timerworckdriver usando Provider

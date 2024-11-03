@@ -6,121 +6,93 @@ import 'package:iconly/iconly.dart';
 import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/dashboard.dart';
-import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
 import 'package:sizer/sizer.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatefulWidget 
+{
   const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  var focusNodeEmail = FocusNode();
-  var focusNodePassword = FocusNode();
-  bool isFocusedEmail = false;
-  bool isFocusedPassword = false;
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin 
+{
+    var focusNodeEmail = FocusNode();
+    var focusNodePassword = FocusNode();
+    bool isFocusedEmail = false;
+    bool isFocusedPassword = false;
 
-  // controllers
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  CommonMethods cMethods = CommonMethods();
+    final TextEditingController _emailController = TextEditingController();
+    final TextEditingController _passwordController = TextEditingController();
+    CommonMethods cMethods = CommonMethods();
 
-  checkIfNetworkIsAvailable() {
+  signInDriver() {
     cMethods.checkConnectivity(context);
     signIn();
   }
 
-  signInFormValidation() {
-    if (_emailController.text.trim().isEmpty) {
-      cMethods.displaysnackbar(
-          "Por favor ingrese su correo electrónico", context);
-      return;
-    } else if (!_emailController.text.contains("@")) {
-      cMethods.displaysnackbar(
-          "Por favor ingrese su correo electrónico valido", context);
-      return;
-    } else if (_passwordController.text.isEmpty) {
-      cMethods.displaysnackbar("Por favor ingrese su contraseña", context);
-      return;
-    } else {
-      signInUser();
-    }
-  }
+  Future<void> signIn() async {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return const Center(child: CircularProgressIndicator());
+    },
+  );
 
-  signInUser() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) =>
-          const LoadingDialog(messageText: "Allowing you to Login..."),
-    );
-
+  try {
     final User? userFirebase = (await FirebaseAuth.instance
             .signInWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    )
-            .catchError((errorMsg) {
-      Navigator.pop(context);
-      cMethods.displaysnackbar(errorMsg.toString(), context);
-      throw Exception(
-          "Error during sign-in"); // Lanza una excepción para manejar en un nivel superior
-    }))
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            ))
         .user;
-
-    if (!context.mounted) {
-      return;
-    }
 
     if (userFirebase != null) {
       DatabaseReference usersRef = FirebaseDatabase.instance
           .ref()
           .child("drivers")
           .child(userFirebase.uid);
-      usersRef.once().then((snap) {
-        if (snap.snapshot.value != null) {
-          if ((snap.snapshot.value as Map)["blockStatus"] == "no") {
-            //userName = (snap.snapshot.value as Map)["name"];
-            Navigator.push(
-                context, MaterialPageRoute(builder: (c) => const Dashboard()));
-          } else {
-            FirebaseAuth.instance.signOut();
-            cMethods.displaysnackbar(
-                "you are blocked. Contact admin: alizeb875@gmail.com", context);
-          }
+          usersRef.once().then((snap) {
+          if (snap.snapshot.value != null) {
+            if ((snap.snapshot.value as Map)["blockStatus"] == "no") {
+              if(!mounted)return;
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (c) => const Dashboard()));
+            } else {
+              FirebaseAuth.instance.signOut();
+              if(!mounted)return;
+              cMethods.showTopAlert(context, this,
+                  "Esta cuenta esta bloqueada. Contacta con el administrador.");
+            }
         } else {
           FirebaseAuth.instance.signOut();
-          cMethods.displaysnackbar(
-              "your record do not exists as a Driver.", context);
+          if(!mounted) return;
+
+              Navigator.pop(context);
+              cMethods.showTopAlert(context, this, 
+              "Tu usuario o contraseña no son correctos.");
         }
       });
     }
+
+  } on FirebaseAuthException catch (errorMsg) 
+  {
+    if(errorMsg.code == "invalid-credential")
+      {
+        if (!mounted) return;
+        Navigator.pop(context);
+        cMethods.showTopAlert(context, this, "Tu usuario o contraseña no son correctos.");
+      }
+      else
+      {
+        if (!mounted) return;
+        Navigator.pop(context);
+        cMethods.showTopAlert(context, this, errorMsg.toString());
+      }
+    
   }
-
-  Future signIn() async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
-
-    await FirebaseAuth.instance
-        .signInWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim())
-        .then((value) {
-      Navigator.pop(context);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Dashboard()));
-    }).catchError((onError) {
-      Navigator.pop(context);
-      cMethods.displaysnackbar(onError.toString(), context);
-    });
-  }
-
+}
   @override
   void initState() {
     focusNodeEmail.addListener(() {
@@ -143,8 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Expanded(
               child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Container(
+            physics: const BouncingScrollPhysics(),
+            child: Container(
               height: 100.h,
               decoration: const BoxDecoration(color: Colors.white),
               padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
@@ -323,7 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
-                              checkIfNetworkIsAvailable();
+                              signInDriver();
                             },
                             style: ElevatedButton.styleFrom(
                                 elevation: 0,

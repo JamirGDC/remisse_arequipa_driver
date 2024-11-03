@@ -12,9 +12,9 @@ import 'loading_dialog.dart';
 
 class NotificationDialog extends StatefulWidget
 {
-  TripDetails? tripDetailsInfo;
+   final TripDetails? tripDetailsInfo;
 
-  NotificationDialog({super.key, this.tripDetailsInfo,});
+  const NotificationDialog({super.key, this.tripDetailsInfo,});
 
   @override
   State<NotificationDialog> createState() => _NotificationDialogState();
@@ -51,7 +51,6 @@ class _NotificationDialogState extends State<NotificationDialog>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     cancelNotificationDialogAfter20Sec();
@@ -73,7 +72,6 @@ class _NotificationDialogState extends State<NotificationDialog>
     await driverTripStatusRef.once()
         .then((snap)
     {
-      Navigator.pop(context);
       Navigator.pop(context);
 
       String newTripStatusValue = "";
