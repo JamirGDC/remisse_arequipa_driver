@@ -10,8 +10,6 @@ import 'package:remisse_arequipa_driver/methods/map_theme_methods.dart';
 import 'package:remisse_arequipa_driver/pushNotification/push_notification_system.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -19,9 +17,9 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-{
-  final Completer<GoogleMapController> googleMapCompleterController = Completer<GoogleMapController>();
+class _HomePageState extends State<HomePage> {
+  final Completer<GoogleMapController> googleMapCompleterController =
+      Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
   Position? currentPositionOfDriver;
   Color colorToShow = Colors.green;
@@ -29,320 +27,304 @@ class _HomePageState extends State<HomePage>
   bool isDriverAvailable = false;
   DatabaseReference? newTripRequestReference;
   MapThemeMethods themeMethods = MapThemeMethods();
+  String? driverPhoto;
 
-
-  getCurrentLiveLocationOfDriver() async
-  {
-    Position positionOfUser = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
+  getCurrentLiveLocationOfDriver() async {
+    Position positionOfUser = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation);
     currentPositionOfDriver = positionOfUser;
     driverCurrentPosition = currentPositionOfDriver;
 
-    LatLng positionOfUserInLatLng = LatLng(currentPositionOfDriver!.latitude, currentPositionOfDriver!.longitude);
+    LatLng positionOfUserInLatLng = LatLng(
+        currentPositionOfDriver!.latitude, currentPositionOfDriver!.longitude);
 
-    CameraPosition cameraPosition = CameraPosition(target: positionOfUserInLatLng, zoom: 15);
-    controllerGoogleMap!.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    CameraPosition cameraPosition =
+        CameraPosition(target: positionOfUserInLatLng, zoom: 15);
+    controllerGoogleMap!
+        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
 
-  goOnlineNow() async
-  {
-
-     SharedPreferences prefs = await SharedPreferences.getInstance();
+  goOnlineNow() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDriverAvailable', true);
-        //all drivers who are Available for new trip requests
     Geofire.initialize("onlineDrivers");
 
     Geofire.setLocation(
-        FirebaseAuth.instance.currentUser!.uid,
-        currentPositionOfDriver!.latitude,
-        currentPositionOfDriver!.longitude,
+      FirebaseAuth.instance.currentUser!.uid,
+      currentPositionOfDriver!.latitude,
+      currentPositionOfDriver!.longitude,
     );
 
-    newTripRequestReference = FirebaseDatabase.instance.ref()
+    newTripRequestReference = FirebaseDatabase.instance
+        .ref()
         .child("drivers")
         .child(FirebaseAuth.instance.currentUser!.uid)
         .child("newTripStatus");
     newTripRequestReference!.set("waiting");
 
-    newTripRequestReference!.onValue.listen((event) { });
+    newTripRequestReference!.onValue.listen((event) {});
   }
 
-  setAndGetLocationUpdates()
-  {
-    positionStreamHomePage = Geolocator.getPositionStream()
-        .listen((Position position)
-    {
+  setAndGetLocationUpdates() {
+    positionStreamHomePage =
+        Geolocator.getPositionStream().listen((Position position) {
       currentPositionOfDriver = position;
 
-      if(isDriverAvailable == true)
-      {
+      if (isDriverAvailable == true) {
         Geofire.setLocation(
-            FirebaseAuth.instance.currentUser!.uid,
-            currentPositionOfDriver!.latitude,
-            currentPositionOfDriver!.longitude,
+          FirebaseAuth.instance.currentUser!.uid,
+          currentPositionOfDriver!.latitude,
+          currentPositionOfDriver!.longitude,
         );
       }
 
       LatLng positionLatLng = LatLng(position.latitude, position.longitude);
-      controllerGoogleMap!.animateCamera(CameraUpdate.newLatLng(positionLatLng));
+      controllerGoogleMap!
+          .animateCamera(CameraUpdate.newLatLng(positionLatLng));
     });
   }
 
   goOfflineNow() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isDriverAvailable', false);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDriverAvailable', false);
 
-  // Re-inicializar el `newTripRequestReference` si es null
-  newTripRequestReference ??= FirebaseDatabase.instance.ref()
-      .child("drivers")
-      .child(FirebaseAuth.instance.currentUser!.uid)
-      .child("newTripStatus");
+    // Re-inicializar el `newTripRequestReference` si es null
+    newTripRequestReference ??= FirebaseDatabase.instance
+        .ref()
+        .child("drivers")
+        .child(FirebaseAuth.instance.currentUser!.uid)
+        .child("newTripStatus");
 
-  // Dejar de compartir la ubicación en Geofire
-  var id = FirebaseAuth.instance.currentUser!.uid;
-  Geofire.removeLocation(id);
+    // Dejar de compartir la ubicación en Geofire
+    var id = FirebaseAuth.instance.currentUser!.uid;
+    Geofire.removeLocation(id);
 
+    // Eliminar el estado `waiting` de la base de datos
+    await newTripRequestReference!.remove();
 
-  // Eliminar el estado `waiting` de la base de datos
-  await newTripRequestReference!.remove();
-  
-  // Desconectar la referencia
-  newTripRequestReference!.onDisconnect();
-  newTripRequestReference = null;
-}
+    // Desconectar la referencia
+    newTripRequestReference!.onDisconnect();
+    newTripRequestReference = null;
+  }
 
-
-  initializePushNotificationSystem()
-  {
+  initializePushNotificationSystem() {
     PushNotificationSystem notificationSystem = PushNotificationSystem();
     notificationSystem.generateDeviceRegistrationToken();
     notificationSystem.startListeningForNewNotification(context);
   }
 
-  retrieveCurrentDriverInfo() async
-  {
-    await FirebaseDatabase.instance.ref()
+  retrieveCurrentDriverInfo() async {
+    await FirebaseDatabase.instance
+        .ref()
         .child("drivers")
         .child(FirebaseAuth.instance.currentUser!.uid)
-        .once().then((snap)
-    {
+        .once()
+        .then((snap) {
       driverName = (snap.snapshot.value as Map)["name"];
       driverPhone = (snap.snapshot.value as Map)["phone"];
       driverPhoto = (snap.snapshot.value as Map)["photo"];
       carColor = (snap.snapshot.value as Map)["car_details"]["carColor"];
       carModel = (snap.snapshot.value as Map)["car_details"]["carModel"];
       carNumber = (snap.snapshot.value as Map)["car_details"]["carNumber"];
+
+      setState(() {}); // Actualizar la interfaz para mostrar la imagen
     });
 
     initializePushNotificationSystem();
   }
 
   void _getDriverAvailability() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool? driverAvailable = prefs.getBool('isDriverAvailable');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? driverAvailable = prefs.getBool('isDriverAvailable');
 
-  setState(() {
-    isDriverAvailable = driverAvailable ?? false;
-    colorToShow = isDriverAvailable ? Colors.pink : Colors.green;
-    titleToShow = isDriverAvailable ? "Desconectarse" : "Conectarse";
-    
-    if (isDriverAvailable) {
-      newTripRequestReference = FirebaseDatabase.instance.ref()
-        .child("drivers")
-        .child(FirebaseAuth.instance.currentUser!.uid)
-        .child("newTripStatus");
-    }
-  });
-}
+    setState(() {
+      isDriverAvailable = driverAvailable ?? false;
+      colorToShow = isDriverAvailable ? Colors.pink : Colors.green;
+      titleToShow = isDriverAvailable ? "Desconectarse" : "Conectarse";
 
+      if (isDriverAvailable) {
+        newTripRequestReference = FirebaseDatabase.instance
+            .ref()
+            .child("drivers")
+            .child(FirebaseAuth.instance.currentUser!.uid)
+            .child("newTripStatus");
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
 
     retrieveCurrentDriverInfo();
-      _getDriverAvailability();
-
+    _getDriverAvailability();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menú',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text("Inicio"),
+              onTap: () {
+                Navigator.pop(context);
+                // Navegar a inicio
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text("Viajes"),
+              onTap: () {
+                Navigator.pop(context);
+                // Navegar a viajes
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Configuración"),
+              onTap: () {
+                Navigator.pop(context);
+                // Navegar a configuración
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.help),
+              title: const Text("Ayuda"),
+              onTap: () {
+                Navigator.pop(context);
+                // Navegar a ayuda
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text("Cerrar sesión"),
+              onTap: () {
+                Navigator.pop(context);
+                // Cerrar sesión
+              },
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: [
-
           GoogleMap(
-            padding: const EdgeInsets.only(bottom: 50, right: 3, top: 130 ), // Mueve los controles de zoom hacia arriba y un poco hacia la izquierda
+            padding: const EdgeInsets.only(bottom: 50, right: 3, top: 130),
             mapType: MapType.normal,
             myLocationEnabled: true,
+            zoomControlsEnabled: false,
+            myLocationButtonEnabled: false,
             initialCameraPosition: kArequipa,
-            onMapCreated: (GoogleMapController mapController)
-            {
+            onMapCreated: (GoogleMapController mapController) {
               controllerGoogleMap = mapController;
               themeMethods.updateMapTheme(controllerGoogleMap!);
-
               googleMapCompleterController.complete(controllerGoogleMap);
-
               getCurrentLiveLocationOfDriver();
             },
           ),
-
-          Container(
-            height: 136,
-            width: double.infinity,
-            color: Colors.black54,
-          ),
-
-          //go online offline button
-          Positioned(
-            top: 61,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                ElevatedButton(
-                  onPressed: ()
-                  {
-                    showModalBottomSheet(
-                        context: context,
-                        isDismissible: false,
-                        builder: (BuildContext context)
-                        {
-                          return Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.black87,
-                              boxShadow:
-                              [
-                                BoxShadow(
-                                  color: Colors.grey,
-                                  blurRadius: 5.0,
-                                  spreadRadius: 0.5,
-                                  offset: Offset(
-                                    0.7,
-                                    0.7,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            height: 221,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                              child: Column(
-                                children: [
-
-                                  const SizedBox(height:  11,),
-
-                                  Text(
-                                      (!isDriverAvailable) ? "Conectarse" : "Desconectarse",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.white70,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 21,),
-
-                                  Text(
-                                    (!isDriverAvailable)
-                                        ? "Tu estado sera conectado, recibirás nuevas solicitudes de viaje de los usuarios."
-                                        : "Tu estado sera desconectado, no recibirás nuevas solicitudes de viaje de los usuarios.",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white30,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 25,),
-
-                                  Row(
-                                    children: [
-
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: ()
-                                          {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            "Volver"
-                                          ),
-                                        ),
-                                      ),
-
-                                      const SizedBox(width: 16,),
-
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          onPressed: ()
-                                          {
-                                            if(!isDriverAvailable)
-                                            {
-                                              //go online
-                                              goOnlineNow();
-
-                                              //get driver location updates
-                                              setAndGetLocationUpdates();
-
-                                              Navigator.pop(context);
-
-                                              setState(() {
-                                                colorToShow = Colors.pink;
-                                                titleToShow = "Desconectarse";
-                                                isDriverAvailable = true;
-                                              });
-                                            }
-                                            else
-                                            {
-                                              //go offline
-                                              goOfflineNow();
-
-                                              Navigator.pop(context);
-
-                                              setState(() {
-                                                colorToShow = Colors.green;
-                                                titleToShow = "Conectarse";
-                                                isDriverAvailable = false;
-                                              });
-                                            }
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: (titleToShow == "Conectarse")
-                                                ? Colors.green
-                                                : Colors.pink,
-                                          ),
-                                          child: const Text(
-                                              "Confirmar"
-                                          ),
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
-
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorToShow,
+          Builder(
+            builder: (BuildContext context) {
+              return Positioned(
+                top: 100,
+                left: 10,
+                child: Container(
+                  width: 56, 
+                  height: 56,
+                  decoration: const BoxDecoration(
+                    color: Colors.white, 
+                    shape: BoxShape.circle, 
                   ),
-                  child: Text(
-                    titleToShow,
+                  child: IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.black),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
                   ),
                 ),
-
-              ],
-            ),
+              );
+            },
           ),
-
         ],
       ),
+      floatingActionButton: Stack(
+  children: [
+    Positioned(
+      top: 100,
+      right: 0,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.pushNamed(context, '/perfil');
+        },
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+              image: driverPhoto != null
+                  ? NetworkImage(driverPhoto!)
+                  : const AssetImage('assets/profile_placeholder.png')
+                      as ImageProvider,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ),
+    ),
+    Positioned(
+      bottom: 0,
+      left: 30,
+      child: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            isDriverAvailable = !isDriverAvailable;
+            if (isDriverAvailable) {
+              goOnlineNow();
+              setAndGetLocationUpdates();
+            } else {
+              goOfflineNow();
+            }
+          });
+        },
+        backgroundColor: Colors.white,
+        shape: const CircleBorder(),
+        child: Icon(
+          Icons.power_settings_new,
+          color: isDriverAvailable ? Colors.green : Colors.pink,
+        ),
+      ),
+    ),
+    Positioned(
+      bottom: 0,
+      right: 0,
+      child: FloatingActionButton(
+        onPressed: () {
+          getCurrentLiveLocationOfDriver();
+        },
+        backgroundColor: Colors.white,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.my_location, color: Colors.black),
+      ),
+    ),
+  ],
+),
+
     );
   }
 }

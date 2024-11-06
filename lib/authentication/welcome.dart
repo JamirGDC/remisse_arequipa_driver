@@ -1,7 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:remisse_arequipa_driver/authentication/login_screen.dart';
-import 'package:remisse_arequipa_driver/authentication/signup_screen.dart';
+import 'package:remisse_arequipa_driver/views/login_screen.dart';
+import 'package:remisse_arequipa_driver/views/signup_screen.dart';
 import 'package:sizer/sizer.dart';
 
 class WelcomePage extends StatefulWidget {
