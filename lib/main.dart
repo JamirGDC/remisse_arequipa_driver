@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:remisse_arequipa_driver/viewmodels/signup_viewmodel.dart';
+import 'package:remisse_arequipa_driver/views/profile_screen.dart';
 import 'package:remisse_arequipa_driver/views/signup_screen.dart';
 import 'package:sizer/sizer.dart';
 
@@ -70,6 +71,8 @@ class MyApp extends StatelessWidget {
             '/formChecklist': (context) => const Formchecklist(),
             '/driverMainScreen': (context) => const DriverMainScreen(),
             '/createquestions': (context) => const CreateQuestions(),
+            '/Profile': (context) => const ProfilePage(),
+
           },
           home: const AuthWrapper(),
         ),
@@ -87,9 +90,9 @@ class AuthWrapper extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator()); // Centrando el indicador de carga
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return const Center(child: Text("Ha ocurrido un error")); // Manejo de errores
+          return const Center(child: Text("Ha ocurrido un error"));
         } else if (snapshot.hasData) {
           return const FormHomePage(); 
         } else {

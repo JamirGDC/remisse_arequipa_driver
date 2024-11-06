@@ -17,7 +17,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   final Completer<GoogleMapController> googleMapCompleterController =
       Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
@@ -28,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   DatabaseReference? newTripRequestReference;
   MapThemeMethods themeMethods = MapThemeMethods();
   String? driverPhoto;
+  late AnimationController _animationController;
 
   getCurrentLiveLocationOfDriver() async {
     Position positionOfUser = await Geolocator.getCurrentPosition(
@@ -87,22 +89,15 @@ class _HomePageState extends State<HomePage> {
   goOfflineNow() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDriverAvailable', false);
-
-    // Re-inicializar el `newTripRequestReference` si es null
     newTripRequestReference ??= FirebaseDatabase.instance
         .ref()
         .child("drivers")
         .child(FirebaseAuth.instance.currentUser!.uid)
         .child("newTripStatus");
 
-    // Dejar de compartir la ubicación en Geofire
     var id = FirebaseAuth.instance.currentUser!.uid;
     Geofire.removeLocation(id);
-
-    // Eliminar el estado `waiting` de la base de datos
     await newTripRequestReference!.remove();
-
-    // Desconectar la referencia
     newTripRequestReference!.onDisconnect();
     newTripRequestReference = null;
   }
@@ -152,12 +147,25 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  @override
+   @override
   void initState() {
     super.initState();
 
+    // Inicializa el controlador de animación para el efecto radar
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+
     retrieveCurrentDriverInfo();
     _getDriverAvailability();
+  }
+
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -169,7 +177,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Color.fromARGB(255, 160, 161, 161),
               ),
               child: Text(
                 'Menú',
@@ -184,15 +192,13 @@ class _HomePageState extends State<HomePage> {
               title: const Text("Inicio"),
               onTap: () {
                 Navigator.pop(context);
-                // Navegar a inicio
               },
             ),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text("Viajes"),
+              title: const Text("Servicios"),
               onTap: () {
                 Navigator.pop(context);
-                // Navegar a viajes
               },
             ),
             ListTile(
@@ -200,7 +206,6 @@ class _HomePageState extends State<HomePage> {
               title: const Text("Configuración"),
               onTap: () {
                 Navigator.pop(context);
-                // Navegar a configuración
               },
             ),
             ListTile(
@@ -208,7 +213,6 @@ class _HomePageState extends State<HomePage> {
               title: const Text("Ayuda"),
               onTap: () {
                 Navigator.pop(context);
-                // Navegar a ayuda
               },
             ),
             ListTile(
@@ -216,7 +220,6 @@ class _HomePageState extends State<HomePage> {
               title: const Text("Cerrar sesión"),
               onTap: () {
                 Navigator.pop(context);
-                // Cerrar sesión
               },
             ),
           ],
@@ -241,14 +244,14 @@ class _HomePageState extends State<HomePage> {
           Builder(
             builder: (BuildContext context) {
               return Positioned(
-                top: 100,
-                left: 10,
+                top: 55,
+                left: 15,
                 child: Container(
-                  width: 56, 
+                  width: 56,
                   height: 56,
                   decoration: const BoxDecoration(
-                    color: Colors.white, 
-                    shape: BoxShape.circle, 
+                    color: Colors.white,
+                    shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.menu, color: Colors.black),
@@ -263,68 +266,203 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: Stack(
-  children: [
-    Positioned(
-      top: 100,
-      right: 0,
-      child: GestureDetector(
-        onTap: () {
-          Navigator.pushNamed(context, '/perfil');
-        },
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              image: driverPhoto != null
-                  ? NetworkImage(driverPhoto!)
-                  : const AssetImage('assets/profile_placeholder.png')
-                      as ImageProvider,
-              fit: BoxFit.cover,
+        children: [
+          Positioned(
+            top: 70,
+            right: 0,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/Profile');
+              },
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: driverPhoto != null
+                        ? NetworkImage(driverPhoto!)
+                        : const AssetImage('assets/profile_placeholder.png')
+                            as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-    ),
-    Positioned(
-      bottom: 0,
-      left: 30,
-      child: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            isDriverAvailable = !isDriverAvailable;
-            if (isDriverAvailable) {
-              goOnlineNow();
-              setAndGetLocationUpdates();
-            } else {
-              goOfflineNow();
-            }
-          });
-        },
-        backgroundColor: Colors.white,
-        shape: const CircleBorder(),
-        child: Icon(
-          Icons.power_settings_new,
-          color: isDriverAvailable ? Colors.green : Colors.pink,
-        ),
-      ),
-    ),
-    Positioned(
-      bottom: 0,
-      right: 0,
-      child: FloatingActionButton(
-        onPressed: () {
-          getCurrentLiveLocationOfDriver();
-        },
-        backgroundColor: Colors.white,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.my_location, color: Colors.black),
-      ),
-    ),
-  ],
-),
+          Positioned(
+            bottom: 0,
+            left: 30,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Añadir el efecto de radar solo si el modo online está activo
+                if (isDriverAvailable)
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                    return Transform.scale(
+                      scale: 1 + _animationController.value * 0.5, // Factor de escala para el efecto de expansión
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.green.withOpacity(1 - _animationController.value),
+                        ),
+                      ),
+                    );
+                  },
 
+                  ),
+                FloatingActionButton(
+                  onPressed: () async {
+                    if (!isDriverAvailable) {
+                      bool? confirmOnline = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("Confirmar"),
+                            content: const Text(
+                                "Vas a empezar a recibir solicitudes de viajes"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: const Text("Cancelar"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: const Text("Aceptar"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmOnline == true) {
+                        showDialog(
+                          // ignore: use_build_context_synchronously
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return const Dialog(
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(width: 20),
+                                    Text("Entrando al Modo Online"),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+
+                        await Future.delayed(const Duration(milliseconds: 200));
+
+                        await goOnlineNow();
+                        await setAndGetLocationUpdates();
+
+                        setState(() {
+                          isDriverAvailable = true;
+                        });
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      }
+                    } else {
+                      bool? confirmOffline = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text("Confirmar"),
+                            content: const Text(
+                                "Vas a dejar de recibir solicitudes de viajes"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false); // Cancelar
+                                },
+                                child: const Text("Cancelar"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true); // Confirmar
+                                },
+                                child: const Text("Aceptar"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmOffline == true) {
+                        showDialog(
+                          // ignore: use_build_context_synchronously
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return const Dialog(
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(width: 20),
+                                    Text("Saliendo del Modo Online"),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+
+                        await Future.delayed(const Duration(milliseconds: 200));
+                        await goOfflineNow();
+
+                        setState(() {
+                          isDriverAvailable = false;
+                        });
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      }
+                    }
+                  },
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(),
+                  child: Icon(
+                    Icons.power_settings_new,
+                    color: isDriverAvailable ? Colors.green : Colors.pink,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: FloatingActionButton(
+              onPressed: () {
+                getCurrentLiveLocationOfDriver();
+              },
+              backgroundColor: Colors.white,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.my_location, color: Colors.black),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
