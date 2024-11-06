@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remisse_arequipa_driver/global.dart';
 
 class ButtonMain extends StatelessWidget {
   final String text;
@@ -23,8 +24,8 @@ class ButtonMain extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Satoshi',
               ),
-              backgroundColor: const Color(0xFF835DF1),
-              foregroundColor: Colors.white,
+              backgroundColor: brandColor,
+              foregroundColor: neutralColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

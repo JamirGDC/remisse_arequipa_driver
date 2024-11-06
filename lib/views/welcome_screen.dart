@@ -1,7 +1,8 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:remisse_arequipa_driver/views/login_screen.dart';
-import 'package:remisse_arequipa_driver/views/signup_screen.dart';
+import 'package:remisse_arequipa_driver/global.dart';
+import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
+import 'package:remisse_arequipa_driver/views/auth/signup_screen.dart';
 import 'package:sizer/sizer.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -68,7 +69,7 @@ class _WelcomePageState extends State<WelcomePage> {
                               'Aplicación Conductores',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  fontSize: 12.sp, fontWeight: FontWeight.w400),
+                                  fontSize: 14.sp, fontWeight: FontWeight.w400),
                             ),
                           ),
                         ]),
@@ -96,7 +97,7 @@ class _WelcomePageState extends State<WelcomePage> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
                                     fontFamily: 'Satoshi'),
-                                backgroundColor: const Color(0xFF835DF1),
+                                backgroundColor: brandColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -104,7 +105,17 @@ class _WelcomePageState extends State<WelcomePage> {
                             child: FadeInUp(
                                 delay: const Duration(milliseconds: 1100),
                                 duration: const Duration(milliseconds: 1200),
-                                child: const Text('Ingresar')),
+                                child: const Text(
+                                  'Ingresar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                
+                                ),
+                                
+                                
+                                
                           ),
                         )
                       ],
@@ -135,7 +146,7 @@ class _WelcomePageState extends State<WelcomePage> {
                             child: const Text(
                               'Registro',
                               style: TextStyle(
-                                color: Color(0xFF835DF1),
+                                color: brandColor,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                               ),

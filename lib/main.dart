@@ -3,22 +3,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:remisse_arequipa_driver/viewmodels/signup_viewmodel.dart';
-import 'package:remisse_arequipa_driver/views/profile_screen.dart';
-import 'package:remisse_arequipa_driver/views/signup_screen.dart';
-import 'package:sizer/sizer.dart';
-
-import 'package:remisse_arequipa_driver/authentication/welcome.dart';
-import 'package:remisse_arequipa_driver/pages/Form/FormChecklist.dart';
 import 'package:remisse_arequipa_driver/pages/Form/form_home_page.dart';
+import 'package:remisse_arequipa_driver/viewmodels/auth/signup_viewmodel.dart';
+import 'package:remisse_arequipa_driver/views/profile_screen.dart';
+import 'package:remisse_arequipa_driver/views/auth/signup_screen.dart';
+import 'package:remisse_arequipa_driver/views/welcome_screen.dart';
+import 'package:sizer/sizer.dart';
+import 'package:remisse_arequipa_driver/pages/Form/FormChecklist.dart';
 import 'package:remisse_arequipa_driver/pages/create_questions.dart';
 import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
 import 'package:remisse_arequipa_driver/pages/providers/formprovider.dart';
 import 'package:remisse_arequipa_driver/pages/providers/timerWorckdriver.dart';
-import 'package:remisse_arequipa_driver/viewmodels/login_viewmodel.dart';
+import 'package:remisse_arequipa_driver/viewmodels/auth/login_viewmodel.dart';
 import 'package:remisse_arequipa_driver/pages/drivermainscreen.dart';
-import 'package:remisse_arequipa_driver/views/login_screen.dart';
+import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

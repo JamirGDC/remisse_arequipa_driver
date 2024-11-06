@@ -1,13 +1,14 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
-import 'package:remisse_arequipa_driver/views/signup_screen.dart';
+import 'package:remisse_arequipa_driver/views/auth/signup_screen.dart';
 import 'package:sizer/sizer.dart';
-import '../viewmodels/login_viewmodel.dart';
-import '../components/button_main.dart';
-import '../components/input_main.dart';
+import '../../viewmodels/auth/login_viewmodel.dart';
+import '../../components/button_main.dart';
+import '../../components/input_main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -198,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                       child: const Text(
                                         'Registrate',
                                         style: TextStyle(
-                                          color: Color(0xFF835DF1),
+                                          color: brandColor,
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                         ),

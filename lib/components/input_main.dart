@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remisse_arequipa_driver/global.dart';
 import 'package:sizer/sizer.dart';
 
 class InputMain extends StatelessWidget {
@@ -29,7 +30,7 @@ class InputMain extends StatelessWidget {
           style: TextStyle(
             fontSize: 15.sp,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[700],
+            color: Colors.black,
           ),
         ),
         SizedBox(height: 0.5.h),
@@ -42,8 +43,8 @@ class InputMain extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               if (isFocused)
-                BoxShadow(
-                  color: const Color(0xFF835DF1).withOpacity(.3),
+                const BoxShadow(
+                  color: brandColor,
                   blurRadius: 4.0,
                   spreadRadius: 2.0,
                 ),

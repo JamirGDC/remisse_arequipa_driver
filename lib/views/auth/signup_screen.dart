@@ -5,13 +5,14 @@ import 'package:iconly/iconly.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:remisse_arequipa_driver/components/button_secondary.dart';
+import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/pages/home_page.dart';
-import 'package:remisse_arequipa_driver/viewmodels/signup_viewmodel.dart';
-import 'package:remisse_arequipa_driver/views/login_screen.dart';
+import 'package:remisse_arequipa_driver/viewmodels/auth/signup_viewmodel.dart';
+import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
 import 'package:sizer/sizer.dart';
-import '../components/button_main.dart';
-import '../components/input_main.dart';
+import '../../components/button_main.dart';
+import '../../components/input_main.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -254,7 +255,7 @@ class _SignupScreenState extends State<SignupScreen>
                               child: const Text(
                                 'Iniciar Sesión',
                                 style: TextStyle(
-                                  color: Color(0xFF835DF1),
+                                  color: brandColor,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
                                 ),

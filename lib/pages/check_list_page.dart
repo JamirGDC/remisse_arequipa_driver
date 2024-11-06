@@ -6,8 +6,6 @@ import 'package:animate_do/animate_do.dart';
 
 
 class ChecklistPage extends StatefulWidget {
-  const ChecklistPage({super.key});
-
   @override
   _ChecklistPageState createState() => _ChecklistPageState();
 }
@@ -30,7 +28,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
       final dataSnapshot = event.snapshot;
       List<Map<String, dynamic>> tempQuestions = [];
 
-      for (var data in dataSnapshot.children) {
+      dataSnapshot.children.forEach((data) {
         final String? key = data.key;
         final questionData = Map<String, dynamic>.from(data.value as Map);
 
@@ -42,7 +40,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
           // Inicializa la respuesta como "N/A"
           _responses[key] = 'N/A';
         }
-      }
+      });
 
       setState(() {
         _questions = tempQuestions;
