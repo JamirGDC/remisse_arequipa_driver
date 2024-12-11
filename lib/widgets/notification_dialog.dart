@@ -44,7 +44,7 @@ class _NotificationDialogState extends State<NotificationDialog>
         Navigator.pop(context);
         timer.cancel();
         driverTripRequestTimeout = 20;
-        audioPlayer.stop();
+        // audioPlayer.stop();
       }
     });
   }
@@ -246,7 +246,7 @@ class _NotificationDialogState extends State<NotificationDialog>
                       onPressed: ()
                       {
                         Navigator.pop(context);
-                        audioPlayer.stop();
+                        // audioPlayer.stop();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.pink,
@@ -266,7 +266,7 @@ class _NotificationDialogState extends State<NotificationDialog>
                     child: ElevatedButton(
                       onPressed: ()
                       {
-                        audioPlayer.stop();
+                        // audioPlayer.stop();
 
                         setState(() {
                           tripRequestStatus = "accepted";

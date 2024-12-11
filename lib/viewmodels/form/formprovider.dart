@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 
 class Formprovider extends ChangeNotifier {
   // Variables
@@ -12,9 +13,6 @@ class Formprovider extends ChangeNotifier {
       {}; // Usando String para almacenar las respuestas seleccionadas
   List<Map<String, dynamic>> questions = [];
   final List<String> options = [
-    'Bien',
-    'Mal',
-    'N/A',
     'Sí',
     'No'
   ]; // Opciones del checklist
@@ -27,6 +25,7 @@ class Formprovider extends ChangeNotifier {
   bool get isBothFormsComplete {
     return (isEnableHealth ?? false) && (isEnableMechanical ?? false);
   } // Verificar si ambos formularios están completos
+  CommonMethods cMethods = CommonMethods();
 
   // Constructor
   Formprovider() {

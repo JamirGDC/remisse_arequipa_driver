@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:remisse_arequipa_driver/global.dart';
-import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/views/home_page.dart';
 import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -16,6 +16,7 @@ class _ProfilePageState extends State<ProfilePage> {
   TextEditingController phoneTextEditingController = TextEditingController();
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController carTextEditingController = TextEditingController();
+  TextEditingController photoEditingController = TextEditingController();
 
   setDriverInfo() {
     setState(() {
@@ -24,6 +25,8 @@ class _ProfilePageState extends State<ProfilePage> {
       emailTextEditingController.text =
           FirebaseAuth.instance.currentUser!.email.toString();
       carTextEditingController.text = "$carNumber - $carColor - $carModel";
+      photoEditingController.text = driverPhoto;
+
     });
   }
 
@@ -72,11 +75,18 @@ class _ProfilePageState extends State<ProfilePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Imagen de perfil
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: NetworkImage(driverPhoto),
-                  backgroundColor: Colors.grey.shade200,
+                Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: 
+                        NetworkImage(driverPhoto) as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
                 ),
+              ),
 
                 // const SizedBox(height: 5),
 

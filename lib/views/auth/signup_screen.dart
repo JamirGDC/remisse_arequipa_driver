@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:remisse_arequipa_driver/components/button_secondary.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
-import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/views/home_page.dart';
 import 'package:remisse_arequipa_driver/viewmodels/auth/signup_viewmodel.dart';
 import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
 import 'package:sizer/sizer.dart';

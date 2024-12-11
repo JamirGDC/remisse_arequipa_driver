@@ -1,10 +1,8 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/models/trip_details.dart';
 import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
 import 'package:remisse_arequipa_driver/widgets/notification_dialog.dart';
@@ -82,13 +80,13 @@ class PushNotificationSystem
     {
       Navigator.pop(context);
 
-      audioPlayer.open(
-        Audio(
-          "assets/audio/alert_sound.mp3"
-        ),
-      );
+      // audioPlayer.open(
+      //   Audio(
+      //     "assets/audio/alert_sound.mp3"
+      //   ),
+      // );
 
-      audioPlayer.play();
+      // audioPlayer.play();
 
       TripDetails tripDetailsInfo = TripDetails();
       double pickUpLat = double.parse((dataSnapshot.snapshot.value! as Map)["pickUpLatLng"]["latitude"]);

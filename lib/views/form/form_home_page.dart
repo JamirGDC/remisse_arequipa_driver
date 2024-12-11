@@ -1,7 +1,8 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:remisse_arequipa_driver/pages/providers/formprovider.dart';
+import 'package:remisse_arequipa_driver/global.dart';
+import 'package:remisse_arequipa_driver/viewmodels/form/formprovider.dart';
 import 'package:sizer/sizer.dart';
 
 class FormHomePage extends StatefulWidget {
@@ -42,9 +43,9 @@ class FormHomePageState extends State<FormHomePage> {
                   padding: EdgeInsets.all(3.h),
                   decoration: BoxDecoration(
                     color: (formProvider1.isBothFormsComplete)
-                        ? Colors.green
-                            .shade100 // Verde si ambos formularios están completos
-                        : Colors.yellow.shade100, // Amarillo si no
+                        ? Colors.black
+                        // Verde si ambos formularios están completos
+                        : Colors.black, // Amarillo si no
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
@@ -58,22 +59,25 @@ class FormHomePageState extends State<FormHomePage> {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.warning_amber_rounded,
-                        color: (formProvider1.isBothFormsComplete)
+                        formProvider1.isBothFormsComplete
+                            ? Icons.check
+                            : Icons.close,
+                        color: formProvider1.isBothFormsComplete
                             ? Colors.green[
                                 800] // Verde si ambos formularios están completos
-                            : Colors.yellow[800], // Amarillo si no
+                            : Colors.orange[800], // Naranja si no
                         size: 7.w,
                       ),
                       SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
                           (formProvider1.isBothFormsComplete)
-                              ? 'Ambos formularios están completos: Salud: ${formProvider1.lastHealthChecklistDate}|  Mecanica: ${formProvider1.lastMechanicalChecklistDate}'
-                              : 'Formulario de Salud: ${formProvider1.lastHealthChecklistDate ?? 'No disponible'} | Formulario de Mecánica: ${formProvider1.lastMechanicalChecklistDate ?? 'No disponible'}',
+                              ? ' Ambos formularios están completos: \n ❤️‍🩹 Salud: ${formProvider1.lastHealthChecklistDate} \n 🔧 Mecanica: ${formProvider1.lastMechanicalChecklistDate}'
+                              : ' Formulario de Salud: ${formProvider1.lastHealthChecklistDate ?? 'No disponible'} \n Formulario de Mecánica: ${formProvider1.lastMechanicalChecklistDate ?? 'No disponible'}',
                           style: TextStyle(
-                            fontSize: 13.sp,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.w500,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -89,9 +93,8 @@ class FormHomePageState extends State<FormHomePage> {
                       .center, // Centra los botones verticalmente
                   children: [
                     // Primer botón: Rellenar Formulario de Salud
-                    Center(
-                      child: SizedBox(
-                        width: 80.w, // Define el ancho del botón
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Expanded(
                         child: ElevatedButton(
                           onPressed: (formProvider1.isEnableHealth ?? true)
                               ? null
@@ -100,31 +103,39 @@ class FormHomePageState extends State<FormHomePage> {
                                       context); //llamo al metodo
                                 },
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 2.h),
+                            elevation: 0,
+                            textStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Satoshi',
+                            ),
                             backgroundColor: (formProvider1.isEnableHealth ??
                                     true)
                                 ? Colors.grey // Color cuando está deshabilitado
-                                : const Color(0xFF835DF1), // Color original
+                                : brandColor, // Color original
+                            foregroundColor: neutralColor,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: Text(
-                            'Rellenar Formulario de Salud',
+                            '❤️    Rellenar Formulario de Salud',
                             style: TextStyle(
-                              fontSize: 12.sp,
+                              fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ]),
+
                     SizedBox(height: 2.h), // Espacio entre los dos botones
                     // Segundo botón: Rellenar Formulario de Mecánica
-                    Center(
-                      child: SizedBox(
-                        width: 80.w, // Mismo ancho que el primer botón
+
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Expanded(
                         child: ElevatedButton(
                           onPressed: (formProvider1.isEnableMechanical ?? true)
                               ? null // Deshabilitado si ya fue rellenado hoy
@@ -133,61 +144,83 @@ class FormHomePageState extends State<FormHomePage> {
                                       context); //llamo al metodo
                                 },
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 2.h),
-                            backgroundColor: (formProvider1
-                                        .isEnableMechanical ??
+                            elevation: 0,
+                            textStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Satoshi',
+                            ),
+                            backgroundColor: (formProvider1.isEnableMechanical ??
                                     true)
                                 ? Colors.grey // Color cuando está deshabilitado
-                                : const Color(0xFF835DF1), // Color original
+                                : brandColor, // Color original
+                            foregroundColor: neutralColor,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: Text(
-                            'Rellenar Formulario de Mecánica',
+                            '🔧    Rellenar Formulario de Mecanica',
                             style: TextStyle(
-                              fontSize: 12.sp,
+                              fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ]),
+
+
+
+
+
+                   
                   ],
                 ),
               ),
-              SizedBox(
-                  height:
-                      12.h), // Espacio adicional antes del botón "Continuar"
-              Center(
-                child: ElevatedButton(
-                  onPressed: (formProvider1.isBothFormsComplete)
-                      ? () {
-                          formProvider1.continueButton(
-                              context); //llamo al metodo
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.5.h),
-                    backgroundColor: formProvider1.isBothFormsComplete
-                        ? const Color(0xFF4CAF50)
-                        : Colors.grey, // Cambia el color según el estado
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              const Expanded(
+                  child: SizedBox(
+                height: 10,
+              )), // Espacio adicional antes del botón "Continuar"
+
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: (formProvider1.isBothFormsComplete)
+                        ? () {
+                            formProvider1
+                                .continueButton(context); //llamo al metodo
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Satoshi',
+                      ),
+                      backgroundColor: formProvider1.isBothFormsComplete
+                          ? const Color.fromARGB(255, 0, 0, 0)
+                          : Colors.grey,
+                      foregroundColor: neutralColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                  ),
-                  child: Text(
-                    'Continuar',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    child: Text(
+                      'Continuar',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ]),
             ],
           ),
         ),

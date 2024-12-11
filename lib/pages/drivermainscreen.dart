@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:remisse_arequipa_driver/pages/providers/timerWorckdriver.dart';
+import 'package:remisse_arequipa_driver/viewmodels/form/timerWorckdriver.dart';
 
 class DriverMainScreen extends StatefulWidget {
   const DriverMainScreen({super.key});

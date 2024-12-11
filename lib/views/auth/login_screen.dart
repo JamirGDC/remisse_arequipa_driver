@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
-import 'package:remisse_arequipa_driver/pages/home_page.dart';
+import 'package:remisse_arequipa_driver/views/home_page.dart';
 import 'package:remisse_arequipa_driver/views/auth/signup_screen.dart';
 import 'package:sizer/sizer.dart';
 import '../../viewmodels/auth/login_viewmodel.dart';

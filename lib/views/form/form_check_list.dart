@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:remisse_arequipa_driver/pages/providers/formprovider.dart';
+import 'package:remisse_arequipa_driver/viewmodels/form/formprovider.dart';
 import 'package:sizer/sizer.dart';
 
 class Formchecklist extends StatelessWidget {
@@ -107,7 +107,7 @@ class Formchecklist extends StatelessWidget {
                       Text(
                         question['text'],
                         style: TextStyle(
-                            fontSize: 12.sp,
+                            fontSize: 15.sp,
                             fontWeight:
                                 FontWeight.bold), // Tamaño de texto responsivo
                       ),
@@ -123,8 +123,7 @@ class Formchecklist extends StatelessWidget {
                                 value: option,
                                 groupValue:
                                     formProvider.getResponse(question['id']),
-                                activeColor: const Color.fromARGB(
-                                    255, 205, 87, 24), // Color personalizado
+                                activeColor: const Color.fromARGB(255, 5, 21, 112), // Color personalizado
                                 onChanged: (String? value) {
                                   formProvider.setResponse(
                                       question['id'], value!);
@@ -133,7 +132,7 @@ class Formchecklist extends StatelessWidget {
                               Text(option,
                                   style: TextStyle(
                                       fontSize:
-                                          10.sp)), // Tamaño de texto ajustado
+                                          15.sp)), // Tamaño de texto ajustado
                             ],
                           );
                         }).toList(),
