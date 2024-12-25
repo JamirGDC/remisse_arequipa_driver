@@ -9,9 +9,9 @@ import 'package:remisse_arequipa_driver/methods/common_methods.dart';
 import 'package:remisse_arequipa_driver/methods/map_theme_methods.dart';
 import 'package:remisse_arequipa_driver/models/trip_details.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:remisse_arequipa_driver/widgets/payment_dialog.dart';
+import 'package:remisse_arequipa_driver/presentation/widgets/payment_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/loading_dialog.dart';
+import '../presentation/widgets/loading_dialog.dart';
 
 class NewTripPage extends StatefulWidget
 {
@@ -374,7 +374,6 @@ class _NewTripPageState extends State<NewTripPage>
       body: Stack(
         children: [
 
-          ///google map
           GoogleMap(
             padding: EdgeInsets.only(bottom: googleMapPaddingFromBottom),
             mapType: MapType.normal,

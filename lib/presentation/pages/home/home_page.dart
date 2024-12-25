@@ -7,7 +7,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/map_theme_methods.dart';
+import 'package:remisse_arequipa_driver/pages/trips_history_page.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/form/home_form/form_home_screen.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/help/help.dart';
 import 'package:remisse_arequipa_driver/pushNotification/push_notification_system.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/profile/profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -66,7 +70,7 @@ class _HomePageState extends State<HomePage>
     newTripRequestReference!.onValue.listen((event) {});
   }
 
-  setAndGetLocationUpdates() {
+  setAndGetLocationUpdates() async {
     positionStreamHomePage =
         Geolocator.getPositionStream().listen((Position position) {
       currentPositionOfDriver = position;
@@ -150,7 +154,6 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
 
-    // Inicializa el controlador de animación para el efecto radar
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -190,14 +193,36 @@ class _HomePageState extends State<HomePage>
               leading: const Icon(Icons.home),
               title: const Text("Inicio"),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FormHomeScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text("Perfil"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.history),
               title: const Text("Servicios"),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TripsHistoryPage(),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -211,16 +236,46 @@ class _HomePageState extends State<HomePage>
               leading: const Icon(Icons.help),
               title: const Text("Ayuda"),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HelpPage(),
+                  ),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text("Cerrar sesión"),
               onTap: () {
-                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("¿Estás seguro?"),
+                      content: Text("¿Quieres cerrar sesión y volver a la pantalla principal?"),
+                      actions: [
+                        TextButton(
+                          child: Text("Cancelar"),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Sí"),
+                          onPressed: () async {
+                            Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+                            await FirebaseAuth.instance.signOut(); // Cierra sesión de Firebase
+                            Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false); // Redirige al Home
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
             ),
+
           ],
         ),
       ),
@@ -271,7 +326,12 @@ class _HomePageState extends State<HomePage>
             right: 0,
             child: GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/Profile');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfilePage(),
+                  ),
+                );
               },
               child: Container(
                 width: 56,

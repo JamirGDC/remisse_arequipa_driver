@@ -4,8 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:remisse_arequipa_driver/models/trip_details.dart';
-import 'package:remisse_arequipa_driver/widgets/loading_dialog.dart';
-import 'package:remisse_arequipa_driver/widgets/notification_dialog.dart';
+import 'package:remisse_arequipa_driver/presentation/widgets/loading_dialog.dart';
+import 'package:remisse_arequipa_driver/presentation/widgets/notification_dialog.dart';
 
 class PushNotificationSystem
 {

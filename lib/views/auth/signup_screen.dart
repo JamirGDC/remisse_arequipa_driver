@@ -7,9 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:remisse_arequipa_driver/components/button_secondary.dart';
 import 'package:remisse_arequipa_driver/global.dart';
 import 'package:remisse_arequipa_driver/methods/common_methods.dart';
-import 'package:remisse_arequipa_driver/views/home_page.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/home/home_page.dart';
 import 'package:remisse_arequipa_driver/viewmodels/auth/signup_viewmodel.dart';
-import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
 import 'package:sizer/sizer.dart';
 import '../../components/button_main.dart';
 import '../../components/input_main.dart';
@@ -244,22 +243,22 @@ class _SignupScreenState extends State<SignupScreen>
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const LoginScreen(),
-                                    ));
-                              },
-                              child: const Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(
-                                  color: brandColor,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ))
+                          // TextButton(
+                          //     onPressed: () {
+                          //       Navigator.push(
+                          //           context,
+                          //           MaterialPageRoute(
+                          //             builder: (context) => const LoginScreen(),
+                          //           ));
+                          //     },
+                          //     child: const Text(
+                          //       'Iniciar Sesión',
+                          //       style: TextStyle(
+                          //         color: brandColor,
+                          //         fontSize: 15,
+                          //         fontWeight: FontWeight.w600,
+                          //       ),
+                          //     ))
                         ],
                       ),
                     )

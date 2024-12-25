@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:remisse_arequipa_driver/global.dart';
-import 'package:remisse_arequipa_driver/views/home_page.dart';
-import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
+import 'package:remisse_arequipa_driver/pages/trips_history_page.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/home/home_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -54,14 +54,12 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontWeight: FontWeight.bold, 
             fontSize: 20, 
-            color:
-                Colors.black,
+
           ),
         ),
         backgroundColor: Colors.transparent,
         centerTitle: true,
       ),
-      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: ConstrainedBox(
@@ -112,36 +110,35 @@ class _ProfilePageState extends State<ProfilePage> {
                             color: Colors.transparent,
                             border: Border.all(
                               color: const Color.fromARGB(255, 226, 223, 223),
+
                               width: 1,
                             ),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Column(
+                          child: const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
+                              Text(
                                 'Rating',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 114, 112, 112),
                                 ),
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const SizedBox(height: 2),
-                                  const Icon(
+                                  SizedBox(height: 2),
+                                  Icon(
                                     Icons.star,
                                     color: Colors.amber,
                                     size: 24,
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8),
                                   Text(
                                     '0.0',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.grey.shade700,
                                     ),
                                   ),
                                 ],
@@ -224,7 +221,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const HomePage()),
+                          builder: (context) => const TripsHistoryPage()),
                     );
                   },
                 ),
@@ -243,15 +240,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 10),
 
-                _buttonProfile(
-                  label: "Desconectarse",
-                  icon: Icons.logout,
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (c) => const LoginScreen()));
-                  },
-                ),
+                // _buttonProfile(
+                //   label: "Desconectarse",
+                //   icon: Icons.logout,
+                //   onPressed: () {
+                //     FirebaseAuth.instance.signOut();
+                //     Navigator.pushReplacement(context,
+                //         MaterialPageRoute(builder: (c) => const LoginScreen()));
+                //   },
+                // ),
 
                 const SizedBox(height: 32),
               ],
@@ -298,7 +295,6 @@ class _ProfilePageState extends State<ProfilePage> {
                             label,
                             style: const TextStyle(
                               fontSize: 20,
-                              color: Colors.black,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

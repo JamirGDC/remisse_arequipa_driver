@@ -1,30 +1,25 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:remisse_arequipa_driver/views/form/form_home_page.dart';
-import 'package:remisse_arequipa_driver/viewmodels/auth/signup_viewmodel.dart';
-import 'package:remisse_arequipa_driver/views/profile/profile_screen.dart';
-import 'package:remisse_arequipa_driver/views/auth/signup_screen.dart';
-import 'package:remisse_arequipa_driver/views/welcome_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/form/home_form/form_home_screen.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/form/home_form/form_home_viewmodel.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/landing/landing_screen.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/route/generator_screen.dart';
 import 'package:sizer/sizer.dart';
-import 'package:remisse_arequipa_driver/views/form/form_check_list.dart';
-import 'package:remisse_arequipa_driver/pages/create_questions.dart';
-import 'package:remisse_arequipa_driver/pages/driver_home_page.dart';
-import 'package:remisse_arequipa_driver/views/home_page.dart';
-import 'package:remisse_arequipa_driver/viewmodels/form/formprovider.dart';
-import 'package:remisse_arequipa_driver/viewmodels/form/timerWorckdriver.dart';
-import 'package:remisse_arequipa_driver/viewmodels/auth/login_viewmodel.dart';
-import 'package:remisse_arequipa_driver/pages/drivermainscreen.dart';
-import 'package:remisse_arequipa_driver/views/auth/login_screen.dart';
+import 'package:remisse_arequipa_driver/presentation/pages/auth/login/login_viewmodel.dart';
+import 'data/datasources/auth_remote_data_source.dart';
+import 'data/datasources/user_remote_data_source.dart';
+import 'data/repositories/auth_repository_impl.dart';
+import 'data/repositories/user_repository_impl.dart';
+import 'domain/usecases/form_home_usercase.dart';
+import 'domain/usecases/login_usercase.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
-  // Manejo asíncrono de permisos
-  if (await Permission.locationWhenInUse.isDenied) {
+    if (await Permission.locationWhenInUse.isDenied) {
     await Permission.locationWhenInUse.request();
   }
 
@@ -40,45 +35,55 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Sizer(
-      builder: (context, orientation, deviceType) => MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => Timerworckdriver()),
-          ChangeNotifierProvider(create: (_) => Formprovider()),
-          ChangeNotifierProvider(create: (_) => LoginViewModel()),
-          ChangeNotifierProvider(create: (_) => SignupViewmodel()),
+    final authDataSource = AuthRemoteDataSource(FirebaseAuth.instance);
+    final authRepository = AuthRepositoryImpl(authDataSource);
+    final loginUseCase = LoginUseCase(authRepository);
+
+    final userDataSource = UserRemoteDataSource(FirebaseAuth.instance);
+    final userRepository = UserRepositoryImpl(userDataSource);
+    final formHomeUseCase = FormHomeUseCase(userRepository);
 
 
-        ],
-        child: MaterialApp(
-          theme: ThemeData(
-            fontFamily: 'Roboto',
-            colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.grey,
-            ).copyWith(
-              primary: Colors.black,
-              secondary: Colors.black,
-            ),
-            useMaterial3: true,
-          ),
-          routes: {
-            '/HomePage': (context) => const HomePage(),
-            '/signup': (context) => const SignupScreen(),
-            '/login': (context) => const LoginScreen(),
-            '/driverHomePage': (context) => const DriverHomePage(),
-            '/formHomePage': (context) => const FormHomePage(),
-            '/formChecklist': (context) => const Formchecklist(),
-            '/driverMainScreen': (context) => const DriverMainScreen(),
-            '/createquestions': (context) => const CreateQuestions(),
-            '/Profile': (context) => const ProfilePage(),
 
-          },
-          home: const AuthWrapper(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => LoginViewModel(loginUseCase),
         ),
+        ChangeNotifierProvider(
+          create: (_) => FormHomeViewModel(formHomeUseCase),
+        ),
+
+      ],
+      child: Sizer(
+        builder: (context, orientation, deviceType) {
+          return MaterialApp(
+            theme: ThemeData(
+              useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.teal,
+                brightness: Brightness.light,
+              ),
+              fontFamily: 'Roboto',
+            ),
+            darkTheme: ThemeData(
+              useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.teal,
+                brightness: Brightness.dark,
+              ),
+            ),
+            routes: {
+              '/': (context) => const GeneratorScreen(),
+              '/home': (context) => const LandingScreen(),
+            },
+          );
+        },
       ),
     );
   }
 }
+
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -93,9 +98,9 @@ class AuthWrapper extends StatelessWidget {
         } else if (snapshot.hasError) {
           return const Center(child: Text("Ha ocurrido un error"));
         } else if (snapshot.hasData) {
-          return const FormHomePage(); 
+          return const FormHomeScreen();
         } else {
-          return const WelcomePage(); 
+          return const LandingScreen();
         }
       },
     );
